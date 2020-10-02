@@ -36,30 +36,54 @@
 ```
 ## Python
 
-```NOTA: Todo lo comentado aqui es dentro de la carpeta api```
+```NOTA: Todo lo comentado aqui aplica solamente para el  path dentro de la carpeta api```
 
 Se requiere instalar paquetes de `requirements.txt`
 
 ### Instalar ambiente de desarrollo
 
+#### Linux/MacOs
 Primero se requiere crear el ambiente:
 ```
 $ python3 -m venv env
 ```
+#### Windows
+Comprueba que tu instalación de python tenga instalado pip. Para ello inserta el siguiente comando:
+``` 
+pip -h
+```
+Si aparece el manual de ayuda de pip, tienes instalada la libreria. En caso contrario, descarga e instala pip.
+
+Con pip, instala la librería virtualenv:
+
+``` 
+pip install virtualenv
+```
+
+##### Crea el virtual environment
+En el path (/semestrei-cloe/api) crea el virtual enviroment
+virtualenv <nameOfYourEnv>
 
 ### Iniciar ambiente de desarrollo
 
-Una vez creado se inicia en `Linux` (supongo que mac es igual, googlear como se hace en windows) con:
+#### Linux/MacOs
 
 ``` $ source env/bin/activate```
 
+#### Windows
+
+
+``` <nameOfYourEnv>\Scripts\activate ```
+
 ### Intalar paquetes
 
-Una vez iniciado el ambiente de desarrollo ejecutar:
+Una vez activado el ambiente de desarrollo ejecutar:
 
 ``` $ pip install -r requirements.txt ```
 
-### Iniciar servidor
+**NOTA:** si este comando genera el error *Could not find a version that satisfies the requirement pkg-resources==0.0.0* ve al archivo requeriments.txt y borra la linea *pkg-resources==0.0.0*. Aparentemente es un bug al generar este archivo.
+
+### Iniciar servidor (win / linux / macOS)
 
 Dentro del ambiente ejecutar:
 
