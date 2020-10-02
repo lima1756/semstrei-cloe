@@ -5,6 +5,9 @@
 .
 ├── api                     # Back-end
 │   ├── main.py             # Punto de entra back-end
+│   ├── .flaskenv           # Carga variables de entorno de flask
+│   ├── requirements.txt    # Lista de dependencias del proyecto (actualizar con "pip freeze > requirements.txt")
+│   ├── main.py             # Punto de entra back-end
 │   └── app                 # Codigo fuente back-end
 |       ├── __init__.py     # Configuracion servidor Flask    
 |       ├── models.py       # Modelos en BDD    
@@ -33,27 +36,34 @@
 ```
 ## Python
 
-Se requiere instalar:
-- Flask
-- pyjwt
-- \<Ir añadiendo nuevos paquetes\>
+```NOTA: Todo lo comentado aqui es dentro de la carpeta api```
 
-### Iniciar Flask:
-#### Windows
-- CMD:
-    ```
-        set FLASK_APP=main.py
-        python -m flask run
-    ```
-- PowerShell:
-    ```
-        set FLASK_APP=main.py
-        python -m flask run
-    ```
-#### Mac o Linux
-        export FLASK_APP=hello.py
-        python -m flask run
-    
+Se requiere instalar paquetes de `requirements.txt`
+
+### Instalar ambiente de desarrollo
+
+Primero se requiere crear el ambiente:
+```
+$ python3 -m venv env
+```
+
+### Iniciar ambiente de desarrollo
+
+Una vez creado se inicia en `Linux` (supongo que mac es igual, googlear como se hace en windows) con:
+
+``` $ source env/bin/activate```
+
+### Intalar paquetes
+
+Una vez iniciado el ambiente de desarrollo ejecutar:
+
+``` $ pip install -r requirements.txt ```
+
+### Iniciar servidor
+
+Dentro del ambiente ejecutar:
+
+``` flask run ```    
 
 ## React
 
