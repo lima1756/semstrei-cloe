@@ -3,21 +3,25 @@
 ## Estructura del proyecto
 ```
 .
-├── api                 # Back-end
-│   ├── main.py
-│   └── __pycache__
-├── node_modules        # Librerias React
-├── package.json        # Manejador proyecto npm
+├── api                     # Back-end
+│   ├── main.py             # Punto de entra back-end
+│   └── app                 # Codigo fuente back-end
+|       ├── __init__.py     # Configuracion servidor Flask    
+|       ├── models.py       # Modelos en BDD    
+|       └── routes.py       # Manejador de rutas
+|
+├── node_modules            # Librerias React
+├── package.json            # Manejador proyecto npm
 ├── package-lock.json
-├── public              # Contenido "publico" del sitio (ej. multimedia)
+├── public                  # Contenido "publico" del sitio (ej. multimedia)
 │   ├── favicon.ico
 │   ├── index.html
 │   ├── logo192.png
 │   ├── logo512.png
 │   ├── manifest.json
 │   └── robots.txt
-├── README.md           # El archivo que se esta leyendo
-└── src                 # Codigo fuente react
+├── README.md               # El archivo que se esta leyendo
+└── src                     # Codigo fuente react
     ├── App.css
     ├── App.js
     ├── App.test.js
@@ -31,6 +35,7 @@
 
 Se requiere instalar:
 - Flask
+- pyjwt
 - \<Ir añadiendo nuevos paquetes\>
 
 ### Iniciar Flask:
