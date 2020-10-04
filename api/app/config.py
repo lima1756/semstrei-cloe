@@ -9,14 +9,17 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     """Development configuration."""
     DEBUG = True
-    # TODO: set development DB configuration
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL_DEV', 'sqlite:///' + os.path.join(basedir, 'app.db')) 
 
 class TestingConfig(BaseConfig):
     """Testing configuration."""
     DEBUG = True
     TESTING = True
-    # TODO: set testing DB configuration
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL_TEST', 'sqlite:///' + os.path.join(basedir, 'app.db')) 
 
 class ProductionConfig(BaseConfig):
     """Production configuration."""
-    # TODO: set production DB configuration
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', DevelopmentConfig.SQLALCHEMY_DATABASE_URI) 
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
