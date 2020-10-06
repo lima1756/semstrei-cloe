@@ -4,14 +4,15 @@
 ```
 .
 ├── api                     # Back-end
-│   ├── main.py             # Punto de entra back-end
+│   ├── main.py             # Punto de entrada back-end
 │   ├── .flaskenv           # Carga variables de entorno de flask
 │   ├── requirements.txt    # Lista de dependencias del proyecto (actualizar con "pip freeze > requirements.txt")
-│   ├── main.py             # Punto de entra back-end
-│   └── app                 # Codigo fuente back-end
-|       ├── __init__.py     # Configuracion servidor Flask    
-|       ├── models.py       # Modelos en BDD    
-|       └── routes.py       # Manejador de rutas
+│   ├── app                 # Codigo fuente back-end
+|   |   ├── __init__.py     # Configuracion servidor Flask    
+|   |   ├── models.py       # Modelos en BDD    
+|   |   └── routes.py       # Manejador de rutas
+|   └── tests               # Carpeta con archivos de pruebas unitarias
+|   
 |
 ├── node_modules            # Librerias React
 ├── package.json            # Manejador proyecto npm
@@ -63,7 +64,13 @@ Una vez iniciado el ambiente de desarrollo ejecutar:
 
 Dentro del ambiente ejecutar:
 
-``` flask run ```    
+``` flask run ```   
+
+### Ejecutar unit testing
+
+Dentro del ambiente ejecutar:
+
+``` python3 -m unittesting ```   
 
 ## React
 

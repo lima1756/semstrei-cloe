@@ -1,8 +1,10 @@
+import logging
 from functools import wraps
 from flask import make_response, request, jsonify
 
-from app import app
+from app import app, db
 from app.models import User, BlacklistToken
+
 
 def login_required(f):
     @wraps(f)
@@ -21,9 +23,25 @@ def login_required(f):
             auth_token = ''
         if auth_token:
             resp = User.decode_auth_token(auth_token)
-            if not isinstance(resp, str):
-                return f(*args, **kwargs)
-            # TODO: if user is disabled or deleted remove token and deny
+            if isinstance(resp, int):
+                user = User.query.filter_by(
+                    id=resp
+                ).first()
+                if user and user.enabled:
+                    return f(*args, **kwargs)
+                else:
+                    blacklist_token = BlacklistToken(token=auth_token)
+                    try:
+                        # insert the token
+                        db.session.add(blacklist_token)
+                        db.session.commit()
+                    except Exception as e:
+                        logging.error(e)
+                    responseObject = {
+                        'status': 'fail',
+                        'message': 'There was a problem while logging in, please contact your administrator'
+                    }
+                    return make_response(jsonify(responseObject)), 401
             responseObject = {
                 'status': 'fail',
                 'message': resp
@@ -36,4 +54,3 @@ def login_required(f):
             }
             return make_response(jsonify(responseObject)), 401
     return decorated_function
-        

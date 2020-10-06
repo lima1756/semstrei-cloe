@@ -4,6 +4,7 @@ from flask import make_response, request, jsonify
 from app import app
 from app.models import User, BlacklistToken
 
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -33,4 +34,3 @@ def admin_required(f):
                 }
                 return make_response(jsonify(responseObject)), 401
     return decorated_function
-        

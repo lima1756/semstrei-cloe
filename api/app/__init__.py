@@ -1,22 +1,28 @@
 import os
+import logging
 
-from flask import Flask 
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+
 app = Flask(__name__)
 
-app_settings = os.getenv(
-    'APP_SETTINGS',
-    'app.config.DevelopmentConfig' # TODO: For production we would want to use ProductionConfig instead of DevelopmentConfig
-)
-app.config.from_object(app_settings)
+# TODO: For production we would want to use ProductionConfig instead of DevelopmentConfig
+from app.config import DevelopmentConfig as app_config
+app.config.from_object(app_config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# TODO: create a middleware logger: 
-#   Info: Log all requests, if logged in and ip address
-#   Error: log all python errors
+# Configuring logger
+logging.basicConfig(
+    level=app_config.LOGGING_LEVEL,
+    format=app_config.LOGGING_FORMAT,
+    filename=app_config.LOGGING_FILE
+)
+
+# Registrando Middleware
+from .middleware import event_logger
 
 # Registrando rutas
 from .routes.user_management import user_management_blueprint

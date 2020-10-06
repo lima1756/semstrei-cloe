@@ -1,6 +1,8 @@
-import jwt, datetime
+import jwt
+import datetime
 from app import app, db
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -18,7 +20,7 @@ class User(db.Model):
         self.enabled = True
 
     def __repr__(self):
-        return '<User {}>'.format(self.email)    
+        return '<User {}>'.format(self.email)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -26,7 +28,7 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def encode_auth_token(self, session_days_duration = 1):
+    def encode_auth_token(self, session_days_duration=1):
         try:
             payload = {
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=session_days_duration, seconds=0),
@@ -45,7 +47,7 @@ class User(db.Model):
     def decode_auth_token(auth_token):
         try:
             payload = jwt.decode(
-                auth_token, 
+                auth_token,
                 app.config.get('SECRET_KEY'),
                 algorithms=['HS256']
             )

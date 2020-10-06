@@ -1,3 +1,4 @@
+import logging
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 
@@ -7,6 +8,7 @@ from app.decorators.login_required import login_required
 from app import db
 
 user_management_blueprint = Blueprint('user_management', __name__)
+
 
 class RegisterAPI(MethodView):
     @login_required
@@ -35,6 +37,7 @@ class RegisterAPI(MethodView):
                 }
                 return make_response(jsonify(responseObject)), 200
             except Exception as e:
+                logging.error(e)
                 responseObject = {
                     'status': 'fail',
                     'message': 'Some error occurred. Please try again.'
@@ -46,6 +49,7 @@ class RegisterAPI(MethodView):
                 'message': 'User already exists. Please Log in.',
             }
             return make_response(jsonify(responseObject)), 202
+
 
 class LoginAPI(MethodView):
     def post(self):
@@ -82,12 +86,13 @@ class LoginAPI(MethodView):
                 }
                 return make_response(jsonify(responseObject)), 404
         except Exception as e:
-            print(e)
+            logging.error(e)
             responseObject = {
                 'status': 'fail',
                 'message': 'Try again'
             }
             return make_response(jsonify(responseObject)), 500
+
 
 class UserDataAPI(MethodView):
     @login_required
@@ -115,10 +120,12 @@ class UserDataAPI(MethodView):
         }
         return make_response(jsonify(responseObject)), 401
 
+
 class LogoutAPI(MethodView):
     """
     Logout Resource
     """
+
     def post(self):
         # get auth token
         auth_header = request.headers.get('Authorization')
@@ -141,6 +148,7 @@ class LogoutAPI(MethodView):
                     }
                     return make_response(jsonify(responseObject)), 200
                 except Exception as e:
+                    logging.error(e)
                     responseObject = {
                         'status': 'fail',
                         'message': e
@@ -158,6 +166,7 @@ class LogoutAPI(MethodView):
                 'message': 'Provide a valid auth token.'
             }
             return make_response(jsonify(responseObject)), 403
+
 
 class RemoveUserAPI(MethodView):
     """
@@ -184,6 +193,7 @@ class RemoveUserAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 401
 
+
 class SwitchUserStatus(MethodView):
     def switchUserStatus(self, status=None):
         post_data = request.get_json()
@@ -205,6 +215,7 @@ class SwitchUserStatus(MethodView):
             }
             return make_response(jsonify(responseObject)), 401
 
+
 class DisableAPI(SwitchUserStatus):
     """
     Disable User
@@ -213,6 +224,7 @@ class DisableAPI(SwitchUserStatus):
     @admin_required
     def post(self):
         return self.switchUserStatus(False)
+
 
 class EnableAPI(SwitchUserStatus):
     """
@@ -223,7 +235,38 @@ class EnableAPI(SwitchUserStatus):
     def post(self):
         return self.switchUserStatus(True)
 
-# TODO: get all users (with pagination)
+
+class GetAllUsers(MethodView):
+    @login_required
+    @admin_required
+    def get(self):
+        post_data = request.get_json()
+        if post_data:
+            page = post_data.get('page') - 1
+            page_size = post_data.get('page_size')
+        else:
+            page = 0
+            page_size = 10
+        users = User.query.all()
+        users_data = []
+        for i in range(page * page_size, (page + 1) * page_size):
+            if i >= len(users) or i < 0:
+                break
+            user = users[i]
+            users_data.append({
+                'user_id': user.id,
+                'email': user.email,
+                'admin': user.admin,
+                'enabled': user.enabled,
+                'registration_date': user.registered_on,
+            })
+        responseObject = {
+            'status': 'success',
+            'data': users_data
+        }
+        return make_response(jsonify(responseObject)), 200
+
+
 
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
@@ -233,6 +276,7 @@ logout_view = LogoutAPI.as_view('logout_api')
 remove_view = RemoveUserAPI.as_view('remove_api')
 disable_view = DisableAPI.as_view('disable_api')
 enable_view = EnableAPI.as_view('enable_api')
+all_users = GetAllUsers.as_view('all_users')
 
 # add Rules for API Endpoints
 user_management_blueprint.add_url_rule(
@@ -244,11 +288,6 @@ user_management_blueprint.add_url_rule(
     '/auth/login',
     view_func=login_view,
     methods=['POST']
-)
-user_management_blueprint.add_url_rule(
-    '/auth/self',
-    view_func=user_data_view,
-    methods=['GET']
 )
 user_management_blueprint.add_url_rule(
     '/auth/logout',
@@ -269,4 +308,14 @@ user_management_blueprint.add_url_rule(
     '/auth/enable',
     view_func=enable_view,
     methods=['POST']
+)
+user_management_blueprint.add_url_rule(
+    '/user',
+    view_func=user_data_view,
+    methods=['GET']
+)
+user_management_blueprint.add_url_rule(
+    '/users',
+    view_func=all_users,
+    methods=['GET']
 )
