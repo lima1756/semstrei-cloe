@@ -9,8 +9,11 @@
 │   ├── requirements.txt    # Lista de dependencias del proyecto (actualizar con "pip freeze > requirements.txt")
 │   ├── app                 # Codigo fuente back-end
 |   |   ├── __init__.py     # Configuracion servidor Flask    
+|   |   ├── config.py       # Archivo configuracion del proyecto   
 |   |   ├── models.py       # Modelos en BDD    
-|   |   └── routes.py       # Manejador de rutas
+|   |   ├── middleware      # carpetas con funciones middleware para los request  
+|   |   ├── decorators      # carpetas con decoradores para funciones de todo el proyect
+|   |   └── routes          # Carpeta de rutas
 |   └── tests               # Carpeta con archivos de pruebas unitarias
 |   
 |
