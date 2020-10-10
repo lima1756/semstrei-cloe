@@ -26,6 +26,7 @@ class TestingConfig(BaseConfig):
     DEBUG = True
     TESTING = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    LOGGING_LEVEL = logging.ERROR
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL_TEST', 'sqlite:///' + os.path.join(basedir, 'app_test.db'))
 
