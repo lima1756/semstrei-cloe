@@ -79,6 +79,22 @@ virtualenv <nameOfYourEnv>
 
 ``` <nameOfYourEnv>\Scripts\activate ```
 
+### Configurar BDD Oracle
+
+For Flask to work with the Oracle Cloud DB is required to install in your server the [*Oracle Instant Client*](https://www.oracle.com/database/technologies/instant-client.html), it has the required libraries for the connection.
+
+#### Windows
+
+After installing this client, we need to add the installation directory to the `PATH` 
+
+#### Linux & Mac
+
+After installing this client, we need to set the environment variable `LD_LIBRARY_PATH ` to the installation directory
+
+#### (Other)
+
+If not possible to set the environment variable, you can use the `init_oracle_client()` method in the application.
+
 ### Intalar paquetes
 
 Una vez activado el ambiente de desarrollo ejecutar:

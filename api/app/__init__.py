@@ -1,11 +1,12 @@
 import os
 import logging
+from dotenv import load_dotenv
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-
+load_dotenv()
 app = Flask(__name__)
 
 # TODO: For production we would want to use ProductionConfig instead of DevelopmentConfig
