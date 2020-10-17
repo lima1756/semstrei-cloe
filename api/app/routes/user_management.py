@@ -2,7 +2,7 @@ import logging
 from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 
-from app.models import User, BlacklistToken
+from app.models import UserData, BlacklistToken
 from app.decorators.admin_required import admin_required
 from app.decorators.login_required import login_required
 from app import db
@@ -17,10 +17,10 @@ class RegisterAPI(MethodView):
         # get the post data
         post_data = request.get_json()
         # check if user already exists
-        user = User.query.filter_by(email=post_data.get('email')).first()
+        user = UserData.query.filter_by(email=post_data.get('email')).first()
         if not user:
             try:
-                user = User(
+                user = UserData(
                     email=post_data.get('email'),
                     password=post_data.get('password'),
                     admin=post_data.get('admin')
@@ -57,7 +57,7 @@ class LoginAPI(MethodView):
         post_data = request.get_json()
         try:
             # fetch the user data
-            user = User.query.filter_by(
+            user = UserData.query.filter_by(
                 email=post_data.get('email')
             ).first()
             if user.check_password(post_data.get('password')):
@@ -100,9 +100,9 @@ class UserDataAPI(MethodView):
         # get the auth token
         auth_header = request.headers.get('Authorization')
         auth_token = auth_header.split(" ")[1]
-        resp = User.decode_auth_token(auth_token)
+        resp = UserData.decode_auth_token(auth_token)
         if not isinstance(resp, str):
-            user = User.query.filter_by(id=resp).first()
+            user = UserData.query.filter_by(id=resp).first()
             responseObject = {
                 'status': 'success',
                 'data': {
@@ -134,7 +134,7 @@ class LogoutAPI(MethodView):
         else:
             auth_token = ''
         if auth_token:
-            resp = User.decode_auth_token(auth_token)
+            resp = UserData.decode_auth_token(auth_token)
             if not isinstance(resp, str):
                 # mark the token as blacklisted
                 blacklist_token = BlacklistToken(token=auth_token)
@@ -176,7 +176,7 @@ class RemoveUserAPI(MethodView):
     @admin_required
     def post(self):
         post_data = request.get_json()
-        user = User.query.filter_by(
+        user = UserData.query.filter_by(
             id=post_data.get('id')
         ).first()
         if user:
@@ -197,7 +197,7 @@ class RemoveUserAPI(MethodView):
 class SwitchUserStatus(MethodView):
     def switchUserStatus(self, status=None):
         post_data = request.get_json()
-        user = User.query.filter_by(
+        user = UserData.query.filter_by(
             id=post_data.get('id')
         ).first()
         if user:
@@ -247,7 +247,7 @@ class GetAllUsers(MethodView):
         else:
             page = 0
             page_size = 10
-        users = User.query.all()
+        users = UserData.query.all()
         users_data = []
         for i in range(page * page_size, (page + 1) * page_size):
             if i >= len(users) or i < 0:

@@ -4,7 +4,7 @@ from app import app, db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class User(db.Model):
+class UserData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     enabled = db.Column(db.Boolean, nullable=False, default=True)
@@ -20,7 +20,7 @@ class User(db.Model):
         self.enabled = True
 
     def __repr__(self):
-        return '<User {}>'.format(self.email)
+        return '<UserData {}>'.format(self.email)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

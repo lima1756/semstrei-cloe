@@ -2,7 +2,7 @@ import unittest
 import json
 
 from app import app, db
-from app.models import User
+from app.models import UserData
 from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
 from ..base import BaseTestCase
 
@@ -18,17 +18,17 @@ class TestUserModel(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        admin = User(
+        admin = UserData(
             email=cls.admin_email,
             password=cls.password,
             admin=True
         )
-        user1 = User(
+        user1 = UserData(
             email=cls.user1_email,
             password=cls.password,
             admin=False
         )
-        user2 = User(
+        user2 = UserData(
             email=cls.user2_email,
             password=cls.password,
             admin=False
@@ -40,16 +40,16 @@ class TestUserModel(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        admin = User.query.filter_by(
+        admin = UserData.query.filter_by(
             email=cls.admin_email
         ).first()
-        user1 = User.query.filter_by(
+        user1 = UserData.query.filter_by(
             email=cls.user1_email
         ).first()
-        user2 = User.query.filter_by(
+        user2 = UserData.query.filter_by(
             email=cls.user2_email
         ).first()
-        user3 = User.query.filter_by(
+        user3 = UserData.query.filter_by(
             email=cls.user3_email
         ).first()
         db.session.delete(admin)
@@ -101,7 +101,7 @@ class TestUserModel(BaseTestCase):
 
     def switch_user_status(self, endpoint, email):
         token = self.get_admin_token()
-        user = User.query.filter_by(
+        user = UserData.query.filter_by(
             email=email
         ).first()
         return self.client.post(
