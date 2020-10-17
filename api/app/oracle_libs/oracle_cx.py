@@ -1,4 +1,5 @@
 import os
+import logging
 import cx_Oracle
 
 
@@ -22,8 +23,11 @@ class oracle_cx():
         retry_delay='3',
         ssl_server_cert_dn='CN=adwc.uscom-east-1.oraclecloud.com,OU=Oracle BMCS US,O=Oracle Corporation,L=Redwood City,ST=California,C=US'
     ):
-        LD = os.getenv('LD_LIBRARY_PATH')
-        cx_Oracle.init_oracle_client(lib_dir=LD)
+        try:
+            LD = os.getenv('LD_LIBRARY_PATH')
+            cx_Oracle.init_oracle_client(lib_dir=LD)
+        except cx_Oracle.ProgrammingError:
+            logging.warning("Oracle client already initialized")
         self.update_credentials(
             username,
             password,
@@ -89,8 +93,8 @@ class oracle_cx():
             ssl_server_cert_dn=ssl_server_cert_dn
         )
 
-    def get_oracle_connection(self, tns_name_ora):
+    def get_oracle_default_connection(self, tns_name_ora):
         """
             Requires $LD_LIBRARY_PATH/network/admin to have oracle wallet
         """
-        cx_Oracle.connect(self.username, self.password, tns_name_ora)
+        return cx_Oracle.connect(self.username, self.password, tns_name_ora)
