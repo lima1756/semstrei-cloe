@@ -6,6 +6,7 @@
 ├── api                     # Back-end
 │   ├── main.py             # Punto de entrada back-end
 │   ├── .flaskenv           # Carga variables de entorno de flask
+│   ├── .env                # IMPORTANTE: archivo no incluido ver mas adelante para instrucciones de configuracion
 │   ├── requirements.txt    # Lista de dependencias del proyecto (actualizar con "pip freeze > requirements.txt")
 │   ├── app                 # Codigo fuente back-end
 |   |   ├── __init__.py     # Configuracion servidor Flask    
@@ -70,6 +71,40 @@ virtualenv <nameOfYourEnv>
 
 ### Iniciar ambiente de desarrollo
 
+### Variables del entorno (Environment Variables .env)
+
+Para que el servidor corra de manera correcta es necesario la configuración de
+multiples variables de entorno:
+
+```
+LD_LIBRARY_PATH
+DATABASE_ORACLE_USER
+DATABASE_ORACLE_PASSWORD
+DATABASE_ORACLE_SERVICE
+```
+
+Estas variables pueden configurarse directo en servidor o en un archivo .env
+
+#### archivo .env
+
+Para configurar las variables directo en un archivo, se requiere crear 
+el archivo `.env` dentro del directorio `./api/` (podemos observar como quedaria
+en el arbol de directorios en la parte inicial de este README).
+
+Una vez creado el archivo solo es necesario establecer las variables dentro del
+mismo:
+```
+LD_LIBRARY_PATH={Directorio de intalacion de oracle instant client}
+DATABASE_ORACLE_USER={usuario de la base de datos oracle}
+DATABASE_ORACLE_PASSWORD={contraseña del usuario de la bdd}
+DATABASE_ORACLE_SERVICE={nombre del servicio de oracle (se obtiene del archivo tnsnames.ora del wallet proporcionado por oracle, se encuentra como "service_name")}
+```
+En el ejemplo anterior es necesario sustituir todo lo que esta entre llaves por 
+el valor, ejemplo:
+```
+DATABASE_ORACLE_USER=admin
+```
+
 #### Linux/MacOs
 
 ``` $ source env/bin/activate```
@@ -81,19 +116,47 @@ virtualenv <nameOfYourEnv>
 
 ### Configurar BDD Oracle
 
-For Flask to work with the Oracle Cloud DB is required to install in your server the [*Oracle Instant Client*](https://www.oracle.com/database/technologies/instant-client.html), it has the required libraries for the connection.
+Para Flask poder trabajar con la base de datos de Oracle en la nube (OCI), es 
+necesario instalar en el servidor el cliente 
+[*Oracle Instant Client*](https://www.oracle.com/database/technologies/instant-client.html)
+, debido a que este contiene las librerias requeridas para la conexión.
+
+Despues de instalar este cliente, es necesario añadir todos los archivos del 
+wallet de oracle en la carpeta /network/admin del cliente, quedando una 
+estructura de archivos similar a esta:
+
+```
+instantclient/
+├── network
+│   └── admin
+│       ├── cwallet.sso
+│       ├── ewallet.p12
+│       ├── keystore.jks
+│       ├── ojdbc.properties
+│       ├── README
+│       ├── sqlnet.ora
+│       ├── tnsnames.ora
+│       └── truststore.jks
+└── ... {archivos del instant client como libclntshcore.so.19.1, xstreams.jar}
+```
 
 #### Windows
 
-After installing this client, we need to add the installation directory to the `PATH` 
+Después de instalar el client se requiere agregar su directorio de instalación 
+al `PATH` 
 
 #### Linux & Mac
 
-After installing this client, we need to set the environment variable `LD_LIBRARY_PATH ` to the installation directory
+Dentro del directorio donde se instalo/descomprimio el cliente se requiere 
+correr:
 
-#### (Other)
+```
+sudo sh -c "echo ./instantclient > /etc/ld.so.conf.d/oic.conf"
+sudo ldconfig
+```
 
-If not possible to set the environment variable, you can use the `init_oracle_client()` method in the application.
+Después de esto solo es necesario establecer la variable del ambiente 
+`LD_LIBRARY_PATH ` a que apunte al directorio de instalación/descompresión.
 
 ### Intalar paquetes
 

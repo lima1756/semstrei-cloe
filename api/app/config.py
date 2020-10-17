@@ -12,12 +12,12 @@ class BaseConfig:
     LOGGING_FORMAT = '%(asctime)s %(levelname)s %(threadName)s : %(message)s'
     LOGGING_FILE = None
     oracle_connection = oracle_cx(
-        username=os.getenv('DATABASE_USER', 'admin'),
-        password=os.getenv('DATABASE_PASSWORD', 'password'),
+        username=os.getenv('DATABASE_ORACLE_USER', 'admin'),
+        password=os.getenv('DATABASE_ORACLE_PASSWORD', 'password'),
         protocol='tcps',
         host='adb.us-ashburn-1.oraclecloud.com',
         port='1522',
-        service_name=os.getenv('DATABASE_SERVICE', 'key_adb_high.adb.oraclecloud.com'),
+        service_name=os.getenv('DATABASE_ORACLE_SERVICE', 'key_adb_high.adb.oraclecloud.com'),
     )
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL'+ENVIRONMENT_TYPE, 
