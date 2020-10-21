@@ -98,6 +98,11 @@ LD_LIBRARY_PATH={Directorio de intalacion de oracle instant client}
 DATABASE_ORACLE_USER={usuario de la base de datos oracle}
 DATABASE_ORACLE_PASSWORD={contraseña del usuario de la bdd}
 DATABASE_ORACLE_SERVICE={nombre del servicio de oracle (se obtiene del archivo tnsnames.ora del wallet proporcionado por oracle, se encuentra como "service_name")}
+# Mail configuration 
+MAIL_SERVER={Servidor de correo electronico}
+MAIL_PORT={puerto del servicio}
+MAIL_USERNAME={usuario de email}
+MAIL_PASSWORD={contraseña de email}
 ```
 En el ejemplo anterior es necesario sustituir todo lo que esta entre llaves por 
 el valor, ejemplo:

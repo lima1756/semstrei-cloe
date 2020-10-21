@@ -1,6 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
+from flask_mail import Mail
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -13,6 +14,7 @@ app = Flask(__name__)
 from app.config import DevelopmentConfig as app_config
 app.config.from_object(app_config)
 db = SQLAlchemy(app)
+mail = Mail(app)
 migrate = Migrate(app, db)
 
 # Configuring logger
@@ -21,6 +23,8 @@ logging.basicConfig(
     format=app_config.LOGGING_FORMAT,
     filename=app_config.LOGGING_FILE
 )
+# configuring mail logger
+app.extensions['mail'].debug = 0
 
 # Registrando Middleware
 from .middleware import event_logger

@@ -6,7 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class BaseConfig:
     """Base configuration."""
     ENVIRONMENT_TYPE="BASE"
-    SECRET_KEY = os.getenv('SECRET_KEY', 'a_really_secret_key')
+    JWT_KEY = os.getenv('SECRET_KEY', 'a_really_secret_key')
     DEBUG = False
     LOGGING_LEVEL = logging.WARN
     LOGGING_FORMAT = '%(asctime)s %(levelname)s %(threadName)s : %(message)s'
@@ -23,6 +23,12 @@ class BaseConfig:
         'DATABASE_URL'+ENVIRONMENT_TYPE, 
         oracle_connection.get_connection_string()
     )
+    MAIL_SERVER = os.getenv('MAIL_SERVER')
+    MAIL_PORT = os.getenv('MAIL_PORT')
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_USE_TLS = True
+    MAIL_DEBUG = 0
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration."""
