@@ -34,10 +34,14 @@ def start():
     # configuring mail logger
     app.extensions['mail'].debug = 0
     # Configuring logger
+    logging_dir = app.config.get('LOGGING_DIR')
+    if not os.path.exists(logging_dir):
+        os.makedirs(logging_dir)
+    logging_file = app.config.get('LOGGING_FILE')
     logging.basicConfig(
         level=app.config.get('LOGGING_LEVEL'),
         format=app.config.get('LOGGING_FORMAT'),
-        filename=app.config.get('LOGGING_FILE')
+        filename= logging_dir + logging_file if logging_file else None
     )
 
     # Registrando Middleware
@@ -45,6 +49,7 @@ def start():
 
     # Registrando rutas
     from .routes.user_management import user_management_blueprint
-    app.register_blueprint(user_management_blueprint)
+    url_prefix = '/api'
+    app.register_blueprint(user_management_blueprint, url_prefix=url_prefix)
     # Registrando modelos
     from . import models

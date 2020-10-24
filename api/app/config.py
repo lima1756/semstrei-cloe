@@ -1,8 +1,9 @@
 import os
 import logging
+from dotenv import load_dotenv
 from app.oracle_libs import oracle_cx
 basedir = os.path.abspath(os.path.dirname(__file__))
-
+load_dotenv()
 class BaseConfig:
     """Base configuration."""
     ENVIRONMENT_TYPE="BASE"
@@ -10,6 +11,7 @@ class BaseConfig:
     DEBUG = False
     LOGGING_LEVEL = logging.WARN
     LOGGING_FORMAT = '%(asctime)s %(levelname)s %(threadName)s : %(message)s'
+    LOGGING_DIR = './logs/'
     LOGGING_FILE = None
     oracle_connection = oracle_cx(
         username=os.getenv('DATABASE_ORACLE_USER', 'admin'),
@@ -53,3 +55,5 @@ class ProductionConfig(BaseConfig):
     """Production configuration."""
     ENVIRONMENT_TYPE="PROD"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    LOGGING_LEVEL = logging.DEBUG
+    LOGGING_FILE = 'server.prod.log'
