@@ -1,5 +1,4 @@
-from app import app, config, start
+from app import App
 from app.config import DevelopmentConfig as app_config
 
-config(app_config)
-start()
+app = App(app_config).app

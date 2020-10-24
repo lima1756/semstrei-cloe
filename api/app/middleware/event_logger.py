@@ -1,7 +1,9 @@
 import logging
 from flask import request as req
-from app import app
 from app.models import UserData
+from app import App
+
+app = App.get_instance().app
 
 def log(user_id):
     ip = req.environ['REMOTE_ADDR'] if req.environ.get(

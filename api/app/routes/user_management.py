@@ -7,10 +7,12 @@ from flask_mail import Message
 from app.models import UserData, BlacklistToken, RecoveryTokens
 from app.decorators.admin_required import admin_required
 from app.decorators.login_required import login_required
-from app import db, mail
+from app import App
 
 user_management_blueprint = Blueprint('user_management', __name__)
 
+mail = App.get_instance().mail
+db = App.get_instance().db
 
 class RegisterAPI(MethodView):
     @login_required

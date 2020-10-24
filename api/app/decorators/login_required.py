@@ -2,9 +2,11 @@ import logging
 from functools import wraps
 from flask import make_response, request, jsonify
 
-from app import app, db
+from app import App
 from app.models import UserData, BlacklistToken
 
+app = App.get_instance().app
+db = App.get_instance().db
 
 def login_required(f):
     @wraps(f)

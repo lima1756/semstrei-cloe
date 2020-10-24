@@ -6,6 +6,7 @@ import logging
 from app.oracle_libs import oracle_cx
 from ..base import BaseTestCase
 
+BaseTestCase.create_app()
 
 class TestUserCX(BaseTestCase):
 

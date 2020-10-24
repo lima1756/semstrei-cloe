@@ -2,15 +2,14 @@ import logging
 
 from flask_testing import TestCase
 
-from app import app, config, start
+from app import App
 from app.config import TestingConfig as app_config
 
 class BaseTestCase(TestCase):
     """ Base Tests """
 
-    def create_app(self):
-        config(app_config)
-        start()
-        from app import db
-        db.create_all()
-        return app
+    @classmethod
+    def create_app(cls):
+        app = App.get_instance(app_config)
+        app.db.create_all()
+        return app.app

@@ -1,11 +1,15 @@
 import unittest
 import json
 
-from app import app, db
+from app import App
+from ..base import BaseTestCase
+BaseTestCase.create_app()
 from app.models import UserData, RecoveryTokens
 from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
-from ..base import BaseTestCase
 
+
+app = App.get_instance().app
+db = App.get_instance().db
 
 class TestUserManagement(BaseTestCase):
 
@@ -67,7 +71,7 @@ class TestUserManagement(BaseTestCase):
         if email is None:
             email = self.admin_email
         return self.client.post(
-            'auth/login',
+            'api/auth/login',
             data=json.dumps({'email': email, 'password': self.password}),
             content_type='application/json'
         )
@@ -95,7 +99,7 @@ class TestUserManagement(BaseTestCase):
     def test_user_registration(self):
         token = self.get_admin_token()
         res = self.client.post(
-            'auth/register',
+            'api/auth/register',
             data=json.dumps({'email': self.user3_email,
                              'password': self.password, 'admin': False}),
             content_type='application/json',
@@ -109,7 +113,7 @@ class TestUserManagement(BaseTestCase):
             email=email
         ).first()
         return self.client.post(
-            'auth/' + endpoint,
+            'api/auth/' + endpoint,
             data=json.dumps({'id': user.id, }),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
@@ -130,7 +134,7 @@ class TestUserManagement(BaseTestCase):
     def test_get_user_data(self):
         token = self.get_admin_token()
         res = self.client.get(
-            'user',
+            'api/user',
             headers={'Authorization': 'Bearer '+token}
         )
         self.assert_success(res)
@@ -138,7 +142,7 @@ class TestUserManagement(BaseTestCase):
     def test_get_all_users(self):
         token = self.get_admin_token()
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
@@ -147,7 +151,7 @@ class TestUserManagement(BaseTestCase):
 
     def test_no_token_cannot_call_required_token_route(self):
         res = self.client.get(
-            'users',
+            'api/users',
         )
         data = json.loads(res.data)
         self.assertTrue(data['status'] == 'fail')
@@ -156,7 +160,7 @@ class TestUserManagement(BaseTestCase):
         self.switch_user_status('enable', self.user1_email)
         token = self.get_token(self.user1_email)
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
@@ -173,7 +177,7 @@ class TestUserManagement(BaseTestCase):
         token = self.get_token(self.user1_email)
         self.switch_user_status('disable', self.user1_email)
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
@@ -181,7 +185,7 @@ class TestUserManagement(BaseTestCase):
 
     def request_recover(self):
         res = self.client.get(
-            'auth/request_recover?email='+self.user1_email,
+            'api/auth/request_recover?email='+self.user1_email,
         )
         return res
 
@@ -203,7 +207,7 @@ class TestUserManagement(BaseTestCase):
         self.assertTrue(user1.check_password(password_to_change))
         token = RecoveryTokens.query.first()
         res = self.client.put(
-            'auth/recover?token='+token.key,
+            'api/auth/recover?token='+token.key,
             data=json.dumps({'password': self.password}),
             content_type='application/json'
         )

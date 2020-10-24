@@ -1,9 +1,10 @@
 from functools import wraps
 from flask import make_response, request, jsonify
 
-from app import app
+from app import App
 from app.models import UserData, BlacklistToken
 
+app = App.get_instance().app
 
 def admin_required(f):
     @wraps(f)

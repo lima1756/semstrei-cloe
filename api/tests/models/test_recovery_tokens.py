@@ -1,10 +1,10 @@
 import unittest
-
-from app.models import RecoveryTokens, UserData
 from ..base import BaseTestCase
+BaseTestCase.create_app()
+from app.models import RecoveryTokens, UserData
 
 
-class TestRecoveryTokens(BaseTestCase):
+class TestRecoveryTokens(BaseTestCase):    
 
     user = UserData(
         email='test@test.com',
@@ -24,4 +24,3 @@ class TestRecoveryTokens(BaseTestCase):
         token = self.gen_token()
         self.assertTrue(isinstance(token.key, str))
         self.assertTrue(RecoveryTokens.validate_key(token.key) == self.user.id)
-
