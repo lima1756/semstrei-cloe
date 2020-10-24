@@ -1,6 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
+from flask_mail import Mail
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -14,6 +15,7 @@ app = Flask(__name__)
 db = None
 migrate = None
 models = None
+mail = None
 config_run = False
 
 def config(app_config):
@@ -23,11 +25,14 @@ def config(app_config):
 def start():
     global db
     global migrate
+    global mail
     if not config_run:
         config(app_config)
     db = SQLAlchemy(app)
     migrate = Migrate(app, db)
-
+    mail = Mail(app)
+    # configuring mail logger
+    app.extensions['mail'].debug = 0
     # Configuring logger
     logging.basicConfig(
         level=app.config.get('LOGGING_LEVEL'),

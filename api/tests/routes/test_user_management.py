@@ -2,17 +2,18 @@ import unittest
 import json
 
 from app import app, db
-from app.models import UserData
+from app.models import UserData, RecoveryTokens
 from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
 from ..base import BaseTestCase
 
-class TestUserModel(BaseTestCase):
 
-    admin_email="admin@mail.com"
-    user1_email="user1@mail.com"
-    user2_email="user2@mail.com"
-    user3_email="user3@mail.com"
-    password="password"
+class TestUserManagement(BaseTestCase):
+
+    admin_email = "admin@testingemail.com"
+    user1_email = "user1@testingemail.com"
+    user2_email = "user2@testingemail.com"
+    user3_email = "user3@testingemail.com"
+    password = "password"
     client = app.test_client()
     token = None
 
@@ -36,6 +37,7 @@ class TestUserModel(BaseTestCase):
         db.session.add(admin)
         db.session.add(user1)
         db.session.add(user2)
+        db.session.query(RecoveryTokens).delete()
         db.session.commit()
 
     @classmethod
@@ -69,7 +71,7 @@ class TestUserModel(BaseTestCase):
             data=json.dumps({'email': email, 'password': self.password}),
             content_type='application/json'
         )
-    
+
     def get_token(self, email=None):
         if email is None:
             email = self.admin_email
@@ -83,7 +85,8 @@ class TestUserModel(BaseTestCase):
         return self.token
 
     def assert_success(self, res, message=''):
-        self.assertTrue(json.loads(res.data)['status']=='success', 'Request failed:'+message)
+        self.assertTrue(json.loads(res.data)[
+                        'status'] == 'success', 'Request failed:'+message)
 
     def test_login(self):
         res = self.login()
@@ -93,7 +96,8 @@ class TestUserModel(BaseTestCase):
         token = self.get_admin_token()
         res = self.client.post(
             'auth/register',
-            data=json.dumps({'email': self.user3_email, 'password': self.password, 'admin': False}),
+            data=json.dumps({'email': self.user3_email,
+                             'password': self.password, 'admin': False}),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
@@ -110,7 +114,7 @@ class TestUserModel(BaseTestCase):
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
-        
+
     def test_user_disable(self):
         res = self.switch_user_status('disable', self.user1_email)
         self.assert_success(res)
@@ -138,15 +142,15 @@ class TestUserModel(BaseTestCase):
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='success')
-        self.assertTrue(len(data['data'])>0, 'The list of users is empty')
+        self.assertTrue(data['status'] == 'success')
+        self.assertTrue(len(data['data']) > 0, 'The list of users is empty')
 
     def test_no_token_cannot_call_required_token_route(self):
         res = self.client.get(
             'users',
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_normal_user_cannot_call_admin_routes(self):
         self.switch_user_status('enable', self.user1_email)
@@ -156,13 +160,13 @@ class TestUserModel(BaseTestCase):
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_disabled_user_cannot_login(self):
         self.switch_user_status('disable', self.user1_email)
         res = self.login(self.user1_email)
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_disabled_user_cannot_use_toke(self):
         self.switch_user_status('enable', self.user1_email)
@@ -173,5 +177,38 @@ class TestUserModel(BaseTestCase):
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
+    def request_recover(self):
+        res = self.client.get(
+            'auth/request_recover?email='+self.user1_email,
+        )
+        return res
+
+    def test_request_recover_password(self):
+        res = self.request_recover()
+        self.assert_success(res)
+
+    def test_recover_password(self):
+        password_to_change = "changed"
+        recovery_req_res = self.request_recover()
+        # Verifying that recovery was send correctly
+        self.assert_success(recovery_req_res)
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        user1.set_password(password_to_change)
+        db.session.add(user1)
+        db.session.commit()
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        # checking password to change was set
+        self.assertTrue(user1.check_password(password_to_change))
+        token = RecoveryTokens.query.first()
+        res = self.client.put(
+            'auth/recover?token='+token.key,
+            data=json.dumps({'password': self.password}),
+            content_type='application/json'
+        )
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        # checking that request was succesful
+        self.assert_success(res)
+        # checking password set through request is set
+        self.assertTrue(user1.check_password(self.password))
