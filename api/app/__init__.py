@@ -5,27 +5,38 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+from app.config import DevelopmentConfig as app_config
 
 app = Flask(__name__)
+db = None
+migrate = None
+models = None
+config_run = False
 
-# TODO: For production we would want to use ProductionConfig instead of DevelopmentConfig
-from app.config import DevelopmentConfig as app_config
-app.config.from_object(app_config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+def config(app_config):
+    app.config.from_object(app_config)
+    config_run = True
 
-# Configuring logger
-logging.basicConfig(
-    level=app_config.LOGGING_LEVEL,
-    format=app_config.LOGGING_FORMAT,
-    filename=app_config.LOGGING_FILE
-)
+def start():
+    global db
+    global migrate
+    if not config_run:
+        config(app_config)
+    db = SQLAlchemy(app)
+    migrate = Migrate(app, db)
 
-# Registrando Middleware
-from .middleware import event_logger
+    # Configuring logger
+    logging.basicConfig(
+        level=app.config.get('LOGGING_LEVEL'),
+        format=app.config.get('LOGGING_FORMAT'),
+        filename=app.config.get('LOGGING_FILE')
+    )
 
-# Registrando rutas
-from .routes.user_management import user_management_blueprint
-app.register_blueprint(user_management_blueprint)
+    # Registrando Middleware
+    from .middleware import event_logger
 
-from app import models
+    # Registrando rutas
+    from .routes.user_management import user_management_blueprint
+    app.register_blueprint(user_management_blueprint)
+    # Registrando modelos
+    from . import models
