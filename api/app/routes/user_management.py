@@ -116,6 +116,8 @@ class UserDataAPI(MethodView):
                 'data': {
                     'user_id': user.id,
                     'email': user.email,
+                    'name': user.name,
+                    'phone_number': user.phone_number,
                     'admin': user.admin,
                     'enabled': user.enabled,
                     'registration_date': user.registered_on,
@@ -264,6 +266,8 @@ class GetAllUsers(MethodView):
             users_data.append({
                 'user_id': user.id,
                 'email': user.email,
+                'name': user.name,
+                'phone_number': user.phone_number,
                 'admin': user.admin,
                 'enabled': user.enabled,
                 'registration_date': user.registered_on,

@@ -161,7 +161,12 @@ sudo ldconfig
 ```
 
 Después de esto solo es necesario establecer la variable del ambiente 
-`LD_LIBRARY_PATH ` a que apunte al directorio de instalación/descompresión.
+`LD_LIBRARY_PATH ` a que apunte al directorio de instalación/descompresión. Ej.
+
+```export LD_LIBRARY_PATH=/home/ubuntu/instantclient```
+
+IMPORTANTE: Es necesario agregar la variable manualmente como se indica
+ a demás de en el .env
 
 ### Intalar paquetes
 
