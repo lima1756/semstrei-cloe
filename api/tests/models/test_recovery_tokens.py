@@ -9,7 +9,9 @@ class TestRecoveryTokens(BaseTestCase):
 
     user = UserData(
         email='test@test.com',
-        password='test'
+        password='test',
+        name="test name",
+        number="1234567"
     )
 
     def gen_token(self):
