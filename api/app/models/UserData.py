@@ -14,11 +14,16 @@ class UserData(db.Model):
     enabled = db.Column(db.Boolean, nullable=False, default=True)
     email = db.Column(db.String(128), index=True, unique=True)
     registered_on = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    phone_number = db.Column(db.String(128), nullable=False)
     password_hash = db.Column(db.String(256))
+    
 
-    def __init__(self, email, password, admin=False):
+    def __init__(self, email, password, name, phone_number, admin=False):
         self.email = email
         self.password = self.set_password(password)
+        self.name = name
+        self.phone_number = phone_number
         self.admin = admin
         self.registered_on = datetime.datetime.now()
         self.enabled = True

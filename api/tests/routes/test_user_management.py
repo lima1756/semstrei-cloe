@@ -18,6 +18,8 @@ class TestUserManagement(BaseTestCase):
     user1_email = "user1@testingemail.com"
     user2_email = "user2@testingemail.com"
     user3_email = "user3@testingemail.com"
+    user_name = "test name"
+    user_phone_number = "331233112"
     password = "password"
     client = app.test_client()
     token = None
@@ -27,16 +29,22 @@ class TestUserManagement(BaseTestCase):
         admin = UserData(
             email=cls.admin_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=True
         )
         user1 = UserData(
             email=cls.user1_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=False
         )
         user2 = UserData(
             email=cls.user2_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=False
         )
         db.session.add(admin)
@@ -101,8 +109,13 @@ class TestUserManagement(BaseTestCase):
         token = self.get_admin_token()
         res = self.client.post(
             'api/auth/register',
-            data=json.dumps({'email': self.user3_email,
-                             'password': self.password, 'admin': False}),
+            data=json.dumps({
+                'email': self.user3_email,
+                'password': self.password,
+                'name': self.user_name,
+                'phone_number': self.user_phone_number,
+                'admin': False
+            }),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
