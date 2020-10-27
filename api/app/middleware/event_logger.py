@@ -1,6 +1,6 @@
 import logging
 from flask import request as req
-from app.models import UserData
+from app.models.UserData import UserData
 from app import App
 
 app = App.get_instance().app

@@ -4,7 +4,8 @@ import json
 from app import App
 from ..base import BaseTestCase
 BaseTestCase.create_app()
-from app.models import UserData, RecoveryTokens
+from app.models.UserData import UserData
+from app.models.RecoveryTokens import RecoveryTokens
 from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
 
 
