@@ -1,7 +1,8 @@
 import unittest
 from ..base import BaseTestCase
 BaseTestCase.create_app()
-from app.models import RecoveryTokens, UserData
+from app.models.RecoveryTokens import RecoveryTokens
+from app.models.UserData import UserData
 
 
 class TestRecoveryTokens(BaseTestCase):    

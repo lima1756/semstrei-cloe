@@ -48,8 +48,6 @@ class App:
                 user_management_blueprint, 
                 url_prefix=url_prefix
             )
-            # Registrando modelos
-            from . import models
         else:
             raise Exception('Singletons must be accessed through `get_instance()`.')
 

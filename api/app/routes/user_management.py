@@ -4,7 +4,9 @@ from flask import Blueprint, request, make_response, jsonify
 from flask.views import MethodView
 from flask_mail import Message
 
-from app.models import UserData, BlacklistToken, RecoveryTokens
+from app.models.UserData import UserData
+from app.models.BlacklistToken import BlacklistToken
+from app.models.RecoveryTokens import RecoveryTokens
 from app.decorators.admin_required import admin_required
 from app.decorators.login_required import login_required
 from app import App
