@@ -30,7 +30,7 @@ class RegisterAPI(MethodView):
                     email=post_data.get('email'),
                     password=post_data.get('password'),
                     name=post_data.get('name'),
-                    number=post_data.get('number'),
+                    phone_number=post_data.get('phone_number'),
                     admin=post_data.get('admin')
                 )
                 # insert the user
