@@ -1,7 +1,7 @@
 import unittest
 from ..base import BaseTestCase
 BaseTestCase.create_app()
-from app.models import UserData
+from app.models.UserData import UserData
 
 
 class TestUserModel(BaseTestCase):
