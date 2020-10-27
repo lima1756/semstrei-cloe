@@ -24,6 +24,7 @@ class RegisterAPI(MethodView):
         post_data = request.get_json()
         # check if user already exists
         user = UserData.query.filter_by(email=post_data.get('email')).first()
+        role=post_data.get('role')
         if not user:
             try:
                 user = UserData(
@@ -31,7 +32,8 @@ class RegisterAPI(MethodView):
                     password=post_data.get('password'),
                     name=post_data.get('name'),
                     phone_number=post_data.get('phone_number'),
-                    admin=post_data.get('admin')
+                    admin=(role==0),
+                    role=role
                 )
                 # insert the user
                 db.session.add(user)
@@ -121,6 +123,7 @@ class UserDataAPI(MethodView):
                     'admin': user.admin,
                     'enabled': user.enabled,
                     'registration_date': user.registered_on,
+                    'role': user.role_id
                 }
             }
             return make_response(jsonify(responseObject)), 200
@@ -271,6 +274,7 @@ class GetAllUsers(MethodView):
                 'admin': user.admin,
                 'enabled': user.enabled,
                 'registration_date': user.registered_on,
+                'role': user.role_id
             })
         responseObject = {
             'status': 'success',

@@ -17,14 +17,17 @@ class UserData(db.Model):
     name = db.Column(db.String(128), nullable=False)
     phone_number = db.Column(db.String(128), nullable=False)
     password_hash = db.Column(db.String(256))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role = db.relationship('Role', backref='role', lazy=True)
     
 
-    def __init__(self, email, password, name, phone_number, admin=False):
+    def __init__(self, email, password, name, phone_number, role, admin=False):
         self.email = email
         self.password = self.set_password(password)
         self.name = name
         self.phone_number = phone_number
         self.admin = admin
+        self.role_id = role
         self.registered_on = datetime.datetime.now()
         self.enabled = True
 

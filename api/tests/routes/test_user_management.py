@@ -31,21 +31,24 @@ class TestUserManagement(BaseTestCase):
             password=cls.password,
             name=cls.user_name,
             phone_number=cls.user_phone_number,
-            admin=True
+            admin=True,
+            role=0
         )
         user1 = UserData(
             email=cls.user1_email,
             password=cls.password,
             name=cls.user_name,
             phone_number=cls.user_phone_number,
-            admin=False
+            admin=False,
+            role=1
         )
         user2 = UserData(
             email=cls.user2_email,
             password=cls.password,
             name=cls.user_name,
             phone_number=cls.user_phone_number,
-            admin=False
+            admin=False,
+            role=1
         )
         db.session.add(admin)
         db.session.add(user1)
@@ -114,7 +117,8 @@ class TestUserManagement(BaseTestCase):
                 'password': self.password,
                 'name': self.user_name,
                 'phone_number': self.user_phone_number,
-                'admin': False
+                'admin': False,
+                'role': 1
             }),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
