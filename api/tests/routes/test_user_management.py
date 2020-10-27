@@ -1,55 +1,70 @@
 import unittest
 import json
 
-from app import app, db
-from app.models import User
-from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
+from app import App
 from ..base import BaseTestCase
+BaseTestCase.create_app()
+from app.models.UserData import UserData
+from app.models.RecoveryTokens import RecoveryTokens
+from app.routes.user_management import DisableAPI, EnableAPI, GetAllUsers, LoginAPI, LogoutAPI, RemoveUserAPI, RegisterAPI
 
-class TestUserModel(BaseTestCase):
 
-    admin_email="admin@mail.com"
-    user1_email="user1@mail.com"
-    user2_email="user2@mail.com"
-    user3_email="user3@mail.com"
-    password="password"
+app = App.get_instance().app
+db = App.get_instance().db
+
+class TestUserManagement(BaseTestCase):
+
+    admin_email = "admin@testingemail.com"
+    user1_email = "user1@testingemail.com"
+    user2_email = "user2@testingemail.com"
+    user3_email = "user3@testingemail.com"
+    user_name = "test name"
+    user_phone_number = "331233112"
+    password = "password"
     client = app.test_client()
     token = None
 
     @classmethod
     def setUpClass(cls):
-        admin = User(
+        admin = UserData(
             email=cls.admin_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=True
         )
-        user1 = User(
+        user1 = UserData(
             email=cls.user1_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=False
         )
-        user2 = User(
+        user2 = UserData(
             email=cls.user2_email,
             password=cls.password,
+            name=cls.user_name,
+            phone_number=cls.user_phone_number,
             admin=False
         )
         db.session.add(admin)
         db.session.add(user1)
         db.session.add(user2)
+        db.session.query(RecoveryTokens).delete()
         db.session.commit()
 
     @classmethod
     def tearDownClass(cls):
-        admin = User.query.filter_by(
+        admin = UserData.query.filter_by(
             email=cls.admin_email
         ).first()
-        user1 = User.query.filter_by(
+        user1 = UserData.query.filter_by(
             email=cls.user1_email
         ).first()
-        user2 = User.query.filter_by(
+        user2 = UserData.query.filter_by(
             email=cls.user2_email
         ).first()
-        user3 = User.query.filter_by(
+        user3 = UserData.query.filter_by(
             email=cls.user3_email
         ).first()
         db.session.delete(admin)
@@ -65,11 +80,11 @@ class TestUserModel(BaseTestCase):
         if email is None:
             email = self.admin_email
         return self.client.post(
-            'auth/login',
+            'api/auth/login',
             data=json.dumps({'email': email, 'password': self.password}),
             content_type='application/json'
         )
-    
+
     def get_token(self, email=None):
         if email is None:
             email = self.admin_email
@@ -83,7 +98,8 @@ class TestUserModel(BaseTestCase):
         return self.token
 
     def assert_success(self, res, message=''):
-        self.assertTrue(json.loads(res.data)['status']=='success', 'Request failed:'+message)
+        self.assertTrue(json.loads(res.data)[
+                        'status'] == 'success', 'Request failed:'+message)
 
     def test_login(self):
         res = self.login()
@@ -92,8 +108,14 @@ class TestUserModel(BaseTestCase):
     def test_user_registration(self):
         token = self.get_admin_token()
         res = self.client.post(
-            'auth/register',
-            data=json.dumps({'email': self.user3_email, 'password': self.password, 'admin': False}),
+            'api/auth/register',
+            data=json.dumps({
+                'email': self.user3_email,
+                'password': self.password,
+                'name': self.user_name,
+                'phone_number': self.user_phone_number,
+                'admin': False
+            }),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
@@ -101,16 +123,16 @@ class TestUserModel(BaseTestCase):
 
     def switch_user_status(self, endpoint, email):
         token = self.get_admin_token()
-        user = User.query.filter_by(
+        user = UserData.query.filter_by(
             email=email
         ).first()
         return self.client.post(
-            'auth/' + endpoint,
+            'api/auth/' + endpoint,
             data=json.dumps({'id': user.id, }),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
-        
+
     def test_user_disable(self):
         res = self.switch_user_status('disable', self.user1_email)
         self.assert_success(res)
@@ -126,7 +148,7 @@ class TestUserModel(BaseTestCase):
     def test_get_user_data(self):
         token = self.get_admin_token()
         res = self.client.get(
-            'user',
+            'api/user',
             headers={'Authorization': 'Bearer '+token}
         )
         self.assert_success(res)
@@ -134,44 +156,77 @@ class TestUserModel(BaseTestCase):
     def test_get_all_users(self):
         token = self.get_admin_token()
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='success')
-        self.assertTrue(len(data['data'])>0, 'The list of users is empty')
+        self.assertTrue(data['status'] == 'success')
+        self.assertTrue(len(data['data']) > 0, 'The list of users is empty')
 
     def test_no_token_cannot_call_required_token_route(self):
         res = self.client.get(
-            'users',
+            'api/users',
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_normal_user_cannot_call_admin_routes(self):
         self.switch_user_status('enable', self.user1_email)
         token = self.get_token(self.user1_email)
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_disabled_user_cannot_login(self):
         self.switch_user_status('disable', self.user1_email)
         res = self.login(self.user1_email)
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
     def test_disabled_user_cannot_use_toke(self):
         self.switch_user_status('enable', self.user1_email)
         token = self.get_token(self.user1_email)
         self.switch_user_status('disable', self.user1_email)
         res = self.client.get(
-            'users',
+            'api/users',
             headers={'Authorization': 'Bearer '+token}
         )
         data = json.loads(res.data)
-        self.assertTrue(data['status']=='fail')
+        self.assertTrue(data['status'] == 'fail')
 
+    def request_recover(self):
+        res = self.client.get(
+            'api/auth/request_recover?email='+self.user1_email,
+        )
+        return res
+
+    def test_request_recover_password(self):
+        res = self.request_recover()
+        self.assert_success(res)
+
+    def test_recover_password(self):
+        password_to_change = "changed"
+        recovery_req_res = self.request_recover()
+        # Verifying that recovery was send correctly
+        self.assert_success(recovery_req_res)
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        user1.set_password(password_to_change)
+        db.session.add(user1)
+        db.session.commit()
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        # checking password to change was set
+        self.assertTrue(user1.check_password(password_to_change))
+        token = RecoveryTokens.query.first()
+        res = self.client.put(
+            'api/auth/recover?token='+token.key,
+            data=json.dumps({'password': self.password}),
+            content_type='application/json'
+        )
+        user1 = UserData.query.filter_by(email=self.user1_email).first()
+        # checking that request was succesful
+        self.assert_success(res)
+        # checking password set through request is set
+        self.assertTrue(user1.check_password(self.password))

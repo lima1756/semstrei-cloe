@@ -1,26 +1,35 @@
 import jwt
 import datetime
-from app import app, db
+from app import App
 from werkzeug.security import generate_password_hash, check_password_hash
 
+JWT_KEY = 'JWT_KEY'
 
-class User(db.Model):
+app = App.get_instance().app
+db = App.get_instance().db
+
+class UserData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     enabled = db.Column(db.Boolean, nullable=False, default=True)
     email = db.Column(db.String(128), index=True, unique=True)
     registered_on = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    phone_number = db.Column(db.String(128), nullable=False)
     password_hash = db.Column(db.String(256))
+    
 
-    def __init__(self, email, password, admin=False):
+    def __init__(self, email, password, name, phone_number, admin=False):
         self.email = email
         self.password = self.set_password(password)
+        self.name = name
+        self.phone_number = phone_number
         self.admin = admin
         self.registered_on = datetime.datetime.now()
         self.enabled = True
 
     def __repr__(self):
-        return '<User {}>'.format(self.email)
+        return '<UserData {}>'.format(self.email)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -37,7 +46,7 @@ class User(db.Model):
             }
             return jwt.encode(
                 payload,
-                app.config.get('SECRET_KEY'),
+                app.config.get(JWT_KEY),
                 algorithm='HS256'
             )
         except Exception as e:
@@ -48,7 +57,7 @@ class User(db.Model):
         try:
             payload = jwt.decode(
                 auth_token,
-                app.config.get('SECRET_KEY'),
+                app.config.get(JWT_KEY),
                 algorithms=['HS256']
             )
             return payload['id']
@@ -57,29 +66,3 @@ class User(db.Model):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
 
-
-class BlacklistToken(db.Model):
-    """
-    Token Model for storing JWT tokens
-    """
-    __tablename__ = 'blacklist_tokens'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    token = db.Column(db.String(500), unique=True, nullable=False)
-    blacklisted_on = db.Column(db.DateTime, nullable=False)
-
-    def __init__(self, token):
-        self.token = token
-        self.blacklisted_on = datetime.datetime.now()
-
-    def __repr__(self):
-        return '<id: token: {}'.format(self.token)
-
-    @staticmethod
-    def check_blacklist(auth_token):
-        # check whether auth token has been blacklisted
-        res = BlacklistToken.query.filter_by(token=str(auth_token)).first()
-        if res:
-            return True
-        else:
-            return False

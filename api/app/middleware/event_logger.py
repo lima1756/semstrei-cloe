@@ -1,7 +1,9 @@
 import logging
 from flask import request as req
-from app import app
-from app.models import User
+from app.models.UserData import UserData
+from app import App
+
+app = App.get_instance().app
 
 def log(user_id):
     ip = req.environ['REMOTE_ADDR'] if req.environ.get(
@@ -15,7 +17,7 @@ def event_logger():
     auth = req.headers.get('Authorization')
     if auth:
         token = auth.split(" ")[1]
-        user_id = User.decode_auth_token(token)
+        user_id = UserData.decode_auth_token(token)
         if isinstance(user_id, int):
             log(str(user_id))
         else:

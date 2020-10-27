@@ -1,9 +1,11 @@
 from functools import wraps
 from flask import make_response, request, jsonify
 
-from app import app
-from app.models import User, BlacklistToken
+from app import App
+from app.models.UserData import UserData
+from app.models.BlacklistToken import BlacklistToken
 
+app = App.get_instance().app
 
 def admin_required(f):
     @wraps(f)
@@ -21,8 +23,8 @@ def admin_required(f):
         else:
             auth_token = ''
         if auth_token:
-            resp = User.decode_auth_token(auth_token)
-            user = User.query.filter_by(
+            resp = UserData.decode_auth_token(auth_token)
+            user = UserData.query.filter_by(
                 id=resp
             ).first()
             if user.admin:
