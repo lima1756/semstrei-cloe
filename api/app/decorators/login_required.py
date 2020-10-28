@@ -42,7 +42,7 @@ def login_required(f):
                         'status': 'fail',
                         'message': 'There was a problem while logging in, please contact your administrator'
                     }
-                    return make_response(jsonify(responseObject)), 401
+                    return make_response(jsonify(responseObject)), 403
             responseObject = {
                 'status': 'fail',
                 'message': resp

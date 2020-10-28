@@ -25,9 +25,9 @@ class Auth(MethodView):
                 if not user.enabled:
                     responseObject = {
                         'status': 'fail',
-                        'message': 'User disables.'
+                        'message': 'User disabled.'
                     }
-                    return make_response(jsonify(responseObject)), 401
+                    return make_response(jsonify(responseObject)), 403
                 if post_data.get('keep'):
                     days_session = 30
                 else:
@@ -45,7 +45,7 @@ class Auth(MethodView):
                     'status': 'fail',
                     'message': 'User does not exist.'
                 }
-                return make_response(jsonify(responseObject)), 404
+                return make_response(jsonify(responseObject)), 403
         except Exception as e:
             logging.error(e)
             responseObject = {
@@ -81,9 +81,9 @@ class Auth(MethodView):
         else:
             responseObject = {
                 'status': 'fail',
-                'message': resp
+                'message': 'Token not valid'
             }
-            return make_response(jsonify(responseObject)), 401
+            return make_response(jsonify(responseObject)), 400
 
     def post(self, action):
         if action == 'login':

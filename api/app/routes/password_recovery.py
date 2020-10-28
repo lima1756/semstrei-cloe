@@ -46,9 +46,9 @@ class RequestRecoverPassword(MethodView):
             return make_response(jsonify(responseObject)), 500
         responseObject = {
             'status': 'fail',
-            'message': 'There was a problem, please try again.'
+            'message': 'Email not found'
         }
-        return make_response(jsonify(responseObject)), 500
+        return make_response(jsonify(responseObject)), 404
 
 
 class RecoverPassword(MethodView):
@@ -99,7 +99,7 @@ class RecoverPassword(MethodView):
             if token is None:
                 responseObject = {
                     'status': 'fail',
-                    'message': 'Invalid token. Please request a new email'
+                    'message': 'Invalid token. Please request a new token'
                 }
                 return make_response(jsonify(responseObject)), 401
             if token.used:
@@ -115,7 +115,7 @@ class RecoverPassword(MethodView):
                     'status': 'fail',
                     'message': 'There was a problem, resetting your user, please contact your administrator.'
                 }
-                return make_response(jsonify(responseObject)), 401
+                return make_response(jsonify(responseObject)), 403
 
             user.set_password(post_data.get('password'))
             token.used = True

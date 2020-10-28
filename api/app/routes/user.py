@@ -43,9 +43,9 @@ class UserAPI(MethodView):
             return make_response(jsonify(responseObject)), 200
         responseObject = {
             'status': 'fail',
-            'message': 'There was a problem, please try again'
+            'message': 'User not found'
         }
-        return make_response(jsonify(responseObject)), 401
+        return make_response(jsonify(responseObject)), 404
 
     def get_self_user(self):
         id = self.obtain_user_id_from_token()
@@ -66,7 +66,7 @@ class UserAPI(MethodView):
                 'status': 'fail',
                 'message': 'User doesn\'t exist'
             }
-            return make_response(jsonify(responseObject)), 401
+            return make_response(jsonify(responseObject)), 404
 
     @admin_required
     def get_specific_user(self, id):
@@ -84,27 +84,35 @@ class UserAPI(MethodView):
             page_size = 10
         else:
             page_size = int(page_size)
-        users = UserData.query.all()
-        users_data = []
-        for i in range(page * page_size, (page + 1) * page_size):
-            if i >= len(users) or i < 0:
-                break
-            user = users[i]
-            users_data.append({
-                'user_id': user.id,
-                'email': user.email,
-                'name': user.name,
-                'phone_number': user.phone_number,
-                'admin': user.admin,
-                'enabled': user.enabled,
-                'registration_date': user.registered_on,
-                'role': user.role_id
-            })
-        responseObject = {
-            'status': 'success',
-            'data': users_data
-        }
-        return make_response(jsonify(responseObject)), 200
+        try:
+            users = UserData.query.all()
+            users_data = []
+            for i in range(page * page_size, (page + 1) * page_size):
+                if i >= len(users) or i < 0:
+                    break
+                user = users[i]
+                users_data.append({
+                    'user_id': user.id,
+                    'email': user.email,
+                    'name': user.name,
+                    'phone_number': user.phone_number,
+                    'admin': user.admin,
+                    'enabled': user.enabled,
+                    'registration_date': user.registered_on,
+                    'role': user.role_id
+                })
+            responseObject = {
+                'status': 'success',
+                'data': users_data
+            }
+            return make_response(jsonify(responseObject)), 200
+        except Exception as e:
+            logging.error(e)
+            responseObject = {
+                'status': 'fail',
+                'message': 'Some error occurred. Please try again.'
+            }
+            return make_response(jsonify(responseObject)), 500
 
     def update_user(self, id):
         try:
@@ -178,13 +186,13 @@ class UserAPI(MethodView):
                     'status': 'fail',
                     'message': 'Some error occurred. Please try again.'
                 }
-                return make_response(jsonify(responseObject)), 401
+                return make_response(jsonify(responseObject)), 500
         else:
             responseObject = {
                 'status': 'fail',
-                'message': 'User already exists. Please Log in.',
+                'message': 'User already exists.',
             }
-            return make_response(jsonify(responseObject)), 202
+            return make_response(jsonify(responseObject)), 409
 
     @login_required
     def get(self, id):
@@ -230,7 +238,7 @@ class UserAPI(MethodView):
                 'status': 'fail',
                 'message': 'User doesn\'t exist'
             }
-            return make_response(jsonify(responseObject)), 401
+            return make_response(jsonify(responseObject)), 404
 
 
 # define the API resources
