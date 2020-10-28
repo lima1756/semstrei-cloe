@@ -112,6 +112,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+cloe368/
+
 
 # Spyder project settings
 .spyderproject
@@ -142,3 +144,6 @@ logs/
 
 # SQLite database files
 *.db
+
+#Pycharm internal files
+.idea/
