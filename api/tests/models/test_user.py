@@ -11,7 +11,8 @@ class TestUserModel(BaseTestCase):
             email='test@test.com',
             password='test',
             name="test name",
-            phone_number="1234567"
+            phone_number="1234567",
+            role=1
         )
         auth_token = user.encode_auth_token()
         self.assertTrue(isinstance(auth_token, bytes))
@@ -21,7 +22,8 @@ class TestUserModel(BaseTestCase):
             email='test@test.com',
             password='test',
             name="test name",
-            phone_number="1234567"
+            phone_number="1234567",
+            role=1
         )
         auth_token = user.encode_auth_token()
         self.assertTrue(isinstance(auth_token, bytes))

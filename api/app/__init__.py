@@ -43,6 +43,13 @@ class App:
 
             # Registrando rutas
             from .routes.user_management import user_management_blueprint
+
+            # Registrando modelos
+            from .models.BlacklistToken import BlacklistToken
+            from .models.UserData import UserData
+            from .models.RecoveryTokens import RecoveryTokens
+            from .models.Role import Role
+
             url_prefix = '/api'
             self.app.register_blueprint(
                 user_management_blueprint, 
