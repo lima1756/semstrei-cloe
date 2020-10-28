@@ -107,8 +107,11 @@ class UserAPI(MethodView):
         return make_response(jsonify(responseObject)), 200
 
     def update_user(self, id):
-        post_data = request.get_json()
         try:
+            auth_token = request.headers.get('Authorization').split(" ")[1]
+            resp = UserData.decode_auth_token(auth_token)
+            curr_is_admin = UserData.query.get(resp).admin
+            post_data = request.get_json()
             user = UserData.query.get(id)
             if user:
                 if post_data.get('email'):
@@ -119,6 +122,9 @@ class UserAPI(MethodView):
                     user.name = post_data.get('name')
                 if post_data.get('phone_number'):
                     user.phone_number = post_data.get('phone_number')
+                if curr_is_admin and not (post_data.get('role') is None):
+                    user.role_id = post_data.get('role')
+                    user.admin = post_data.get('role') == 0
                 db.session.add(user)
                 db.session.commit()
                 responseObject = {
@@ -192,7 +198,7 @@ class UserAPI(MethodView):
             return self.get_specific_user(id)
 
     @login_required
-    def put(self, id, action):
+    def put(self, id=None, action=None):
         if action is None:
             if id is None:
                 return self.update_user(self.obtain_user_id_from_token())
