@@ -79,9 +79,11 @@ class UserAPI(MethodView):
         if page is None:
             page = 0
         else:
-            page -= 1
+            page = int(page)-1
         if page_size is None:
             page_size = 10
+        else:
+            page_size = int(page_size)
         users = UserData.query.all()
         users_data = []
         for i in range(page * page_size, (page + 1) * page_size):
