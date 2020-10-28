@@ -167,11 +167,9 @@ class UserAPI(MethodView):
                 )
                 db.session.add(user)
                 db.session.commit()
-                auth_token = user.encode_auth_token()
                 responseObject = {
                     'status': 'success',
-                    'message': 'Successfully registered.',
-                    'auth_token': auth_token.decode()
+                    'message': 'Successfully registered.'
                 }
                 return make_response(jsonify(responseObject)), 200
             except Exception as e:
