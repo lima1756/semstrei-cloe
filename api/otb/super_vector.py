@@ -1,3 +1,4 @@
+
 class Dimension:
     """
     Una dimension denota el encabezado de una columna  y las categorias que esta categoria posee.
