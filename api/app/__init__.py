@@ -42,19 +42,22 @@ class App:
             from .middleware import event_logger
 
             # Registrando rutas
-            from .routes.user_management import user_management_blueprint
+            from .routes.user import user_blueprint
+            from .routes.password_recovery import password_recovery_blueprint
+            from .routes.auth import auth_blueprint
+            url_prefix = '/api'
+            self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                password_recovery_blueprint, 
+                url_prefix=url_prefix
+            )
+            self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
 
             # Registrando modelos
             from .models.BlacklistToken import BlacklistToken
             from .models.UserData import UserData
             from .models.RecoveryTokens import RecoveryTokens
             from .models.Role import Role
-
-            url_prefix = '/api'
-            self.app.register_blueprint(
-                user_management_blueprint, 
-                url_prefix=url_prefix
-            )
         else:
             raise Exception('Singletons must be accessed through `get_instance()`.')
 
