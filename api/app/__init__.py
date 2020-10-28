@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_mail import Mail
 
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -19,6 +20,7 @@ class App:
         if App.instance is None:
             App.instance = self
             self.app = Flask(__name__)
+            CORS(self.app)
             if app_config is None:
                 app_config = development_config
             self.app.config.from_object(app_config)
