@@ -21,8 +21,8 @@ class Dimension:
         self._categories.append(category)
 
     def remove_category(self):
-        if len(self.categories) > 0:
-            return self.categories.pop()
+        if len(self._categories) > 0:
+            return self._categories.pop()
         return None
 
     def get_name(self):
@@ -92,8 +92,8 @@ class Header:
         self._dimensions.append(dimension)
 
     def remove_dimension(self):
-        if len(self.dimensions) > 0:
-            return self.dimensions.pop()
+        if len(self._dimensions) > 0:
+            return self._dimensions.pop()
         return None
 
     def get_dimensions(self):
@@ -111,8 +111,6 @@ class Header:
     def __eq__(self, other):
         if type(self) != type(other):
             return False
-        if self.get_vector_name() != other.get_vector_name():
-            return False
 
         self_dimensions = self.get_dimensions()
         other_dimensions = other.get_dimensions()
@@ -125,7 +123,7 @@ class Header:
             return False
 
         for i in range(len(self_dimensions)):
-            if not self_dimensions[i] == other_dimensions[i]:
+            if self_dimensions[i] != other_dimensions[i]:
                 return False
         return True
 
@@ -171,4 +169,4 @@ class SuperVector:
         self._header = header
 
     def are_same_type(self, other):
-        return self.get_header() != other.get_header()
+        return self.get_header() == other.get_header()
