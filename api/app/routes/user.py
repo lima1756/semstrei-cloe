@@ -164,15 +164,17 @@ class UserAPI(MethodView):
         user = UserData.query.filter_by(email=post_data.get('email')).first()
         role = post_data.get('role')
         if not user:
+            plain_password = UserData.gen_password()
             try:
                 user = UserData(
                     email=post_data.get('email'),
-                    password=post_data.get('password'),
+                    password=plain_password,
                     name=post_data.get('name'),
                     phone_number=post_data.get('phone_number'),
                     admin=(role == 0),
                     role=role
                 )
+                # TODO: Send email
                 db.session.add(user)
                 db.session.commit()
                 responseObject = {
