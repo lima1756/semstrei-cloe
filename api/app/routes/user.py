@@ -24,22 +24,26 @@ class UserAPI(MethodView):
         auth_token = auth_header.split(" ")[1]
         return UserData.decode_auth_token(auth_token)
 
+    def construct_user_data(self, user):
+        return {
+            'status': 'success',
+            'data': {
+                'user_id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'phone_number': user.phone_number,
+                'admin': user.admin,
+                'enabled': user.enabled,
+                'registration_date': user.registered_on,
+                'role': user.role_id,
+                'new_user': user.new_user
+            }
+        }
+
     def get_user(self, id):
         user = UserData.query.get(id)
         if user:
-            responseObject = {
-                'status': 'success',
-                'data': {
-                    'user_id': user.id,
-                    'email': user.email,
-                    'name': user.name,
-                    'phone_number': user.phone_number,
-                    'admin': user.admin,
-                    'enabled': user.enabled,
-                    'registration_date': user.registered_on,
-                    'role': user.role_id
-                }
-            }
+            responseObject = self.construct_user_data(user)
             return make_response(jsonify(responseObject)), 200
         responseObject = {
             'status': 'fail',
@@ -91,16 +95,7 @@ class UserAPI(MethodView):
                 if i >= len(users) or i < 0:
                     break
                 user = users[i]
-                users_data.append({
-                    'user_id': user.id,
-                    'email': user.email,
-                    'name': user.name,
-                    'phone_number': user.phone_number,
-                    'admin': user.admin,
-                    'enabled': user.enabled,
-                    'registration_date': user.registered_on,
-                    'role': user.role_id
-                })
+                users_data.append(self.construct_user_data(user))
             responseObject = {
                 'status': 'success',
                 'data': users_data
@@ -126,6 +121,7 @@ class UserAPI(MethodView):
                     user.email = data.get('email')
                 if data.get('password'):
                     user.set_password(data.get('password'))
+                    user.new_user = False
                 if data.get('name'):
                     user.name = data.get('name')
                 if data.get('phone_number'):

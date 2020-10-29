@@ -21,6 +21,7 @@ class UserData(db.Model):
     phone_number = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    new_user = db.Column(db.Boolean, default=True)
     role = db.relationship('Role', backref='role', lazy=True)
 
     def __init__(self, email, password, name, phone_number, role, admin=False):
