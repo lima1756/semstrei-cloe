@@ -1,6 +1,6 @@
 import logging
 import jwt
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, make_response, jsonify, render_template
 from flask.views import MethodView
 from flask_mail import Message
 
@@ -165,16 +165,25 @@ class UserAPI(MethodView):
         role = post_data.get('role')
         if not user:
             plain_password = UserData.gen_password()
+            email = post_data.get('email')
+            name = post_data.get('name')
             try:
                 user = UserData(
-                    email=post_data.get('email'),
+                    email=email,
                     password=plain_password,
-                    name=post_data.get('name'),
+                    name=name,
                     phone_number=post_data.get('phone_number'),
                     admin=(role == 0),
                     role=role
                 )
-                # TODO: Send email
+                msg = Message(
+                    'OTB: Welcome!',
+                    sender='a01634417@itesm.mx',
+                    recipients=[email]
+                )
+                msg.html = render_template(
+                    "welcome.html", name=name, password=plain_password)
+                mail.send(msg)
                 db.session.add(user)
                 db.session.commit()
                 responseObject = {

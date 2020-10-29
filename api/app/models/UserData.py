@@ -23,8 +23,6 @@ class UserData(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', backref='role', lazy=True)
 
-    password_characters = string.ascii_letters + string.digits
-
     def __init__(self, email, password, name, phone_number, role, admin=False):
         self.email = email
         self.password = self.set_password(password)
@@ -34,12 +32,12 @@ class UserData(db.Model):
         self.role_id = role
         self.registered_on = datetime.datetime.now()
         self.enabled = True
-    
+
     @staticmethod
-    def gen_password(self, length=12):
-        self.password_characters
+    def gen_password(length=12):
+        password_characters = string.ascii_letters + string.digits
         plain_password = ''.join(
-            (random.choice(self.password_characters) for i in range(length)))
+            (random.choice(password_characters) for i in range(length)))
         return plain_password
 
     def __repr__(self):
