@@ -80,16 +80,19 @@ class UserAPI(MethodView):
     def get_all_users(self):
         page = request.args.get('page')
         page_size = request.args.get('page_size')
-        if page is None:
+        if page is None and page_size is not None:
             page = 0
-        else:
-            page = int(page)-1
-        if page_size is None:
-            page_size = 10
-        else:
             page_size = int(page_size)
+        elif page is not None and page_size is None:
+            page_size = 10
+            page = int(page)-1
+        else:
+            page = 0
+            page_size = -1
         try:
             users = UserData.query.all()
+            if page_size == -1:
+                page_size = len(users) 
             users_data = []
             for i in range(page * page_size, (page + 1) * page_size):
                 if i >= len(users) or i < 0:
