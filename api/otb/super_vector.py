@@ -37,6 +37,11 @@ class Dimension:
     def set_categories(self, categories):
         self._categories = categories
 
+    def get_index_category(self, category_name):
+        if category_name not in self._categories:
+            return None
+        return self._categories.index(category_name)
+
     def __eq__(self, other):
         if type(self) != type(other):
             return False
@@ -108,6 +113,27 @@ class Header:
     def set_vector_name(self, vector_name):
         self._vector_name = vector_name
 
+    def get_index_dimension(self, dimension_name):
+        for i in range(len(self._dimensions)):
+            if dimension_name == self._dimensions[i].get_name():
+                return i
+        return None
+
+    def get_index_category(self, dimension_name, category_name):
+        idx_dim = self.get_index_dimension(dimension_name)
+        if idx_dim is None:
+            return None
+        return [idx_dim, self._dimensions[idx_dim].get_index_category(category_name)]
+
+    def get_shape_categories(self, categories_each_dimension):
+        result = []
+        if len(categories_each_dimension) > len(self._dimensions):
+            return None  # If categories for each dim are smaller than  h.dimensions, we'll return the first N dim.
+        for i in range(len(categories_each_dimension)):
+            result.append(self.get_index_category(self._dimensions[i].get_name(),
+                                                  categories_each_dimension[i])[-1])
+        return tuple(result)
+
     def __eq__(self, other):
         if type(self) != type(other):
             return False
@@ -170,3 +196,12 @@ class SuperVector:
 
     def are_same_type(self, other):
         return self.get_header() == other.get_header()
+
+    def get_index_dimension(self, dimension_name):
+        return self._header.get_index_dimension(dimension_name)
+
+    def get_index_category(self, dimension_name, category_name):
+        return self._header.get_index_category(dimension_name, category_name)
+
+    def get_shape_categories(self, categories_each_dimension):
+        return self._header.get_shape_categories(categories_each_dimension)
