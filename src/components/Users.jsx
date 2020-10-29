@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -11,24 +11,14 @@ import SearchIcon from '@material-ui/icons/Search';
 import Dialog from './NewUser';
 import Drawer from './Drawer'
 
-function createData(image, name, calories, fat, carbs, protein) {
-    return { image, name, calories, fat, carbs, protein };
-}
+import axios from 'axios';
+import https from 'https';
 
-const rows = [
-    createData("https://picsum.photos/200/300?random=1",'Eduardo Alonso Herrera', 'eduardo.alonsoh@gmail.com', 'Administrador', '3332019357', '10-10-2020'),
-    createData("https://picsum.photos/200/300?random=2",'Diego Cardenas', 'diego@cardenas.com', 'Ventas', '3333333333', '7-10-2020'),
-    createData("https://picsum.photos/200/300?random=3", 'Ivan Morret', 'Ivan@morret.com', 'Desarrollador', '4444444444', '2-10-2020'),
-    createData("https://picsum.photos/200/300?random=4", 'Alex Gonzalez', 'alex@gonz.com', 'Vendedor', '5555555555', '1-10-2020'),
-    createData("https://picsum.photos/200/300?random=5", 'Emiliano Alonso Herrera', 'eduardo.alonsoh@gmail.com', 'Administrador', '3332019357', '10-10-2020'),
-    createData("https://picsum.photos/200/300?random=6", 'Armando Cardenas', 'diego@cardenas.com', 'Ventas', '3333333333', '7-10-2020'),
-    createData("https://picsum.photos/200/300?random=7", 'Victoria Morret', 'Ivan@morret.com', 'Desarrollador', '4444444444', '2-10-2020'),
-    createData("https://picsum.photos/200/300?random=8", 'Ithzel Gonzalez', 'alex@gonz.com', 'Vendedor', '5555555555', '1-10-2020'),
-    createData("https://picsum.photos/200/300?random=9", 'Maria Alonso Herrera', 'eduardo.alonsoh@gmail.com', 'Administrador', '3332019357', '10-10-2020'),
-    createData("https://picsum.photos/200/300?random=10", 'Luis Cardenas', 'diego@cardenas.com', 'Ventas', '3333333333', '7-10-2020'),
-    createData("https://picsum.photos/200/300?random=11", 'Aaron Morret', 'Ivan@morret.com', 'Desarrollador', '4444444444', '2-10-2020'),
-    createData("https://picsum.photos/200/300?random=12", 'Tomas Gonzalez', 'alex@gonz.com', 'Vendedor', '5555555555', '1-10-2020'),
-];
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+})
+axios.defaults.options = httpsAgent
+axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY1MTAyMDAsImlhdCI6MTYwMzkxODIwMCwiaWQiOjF9.ucki8xqRxG9MWLsCu43fszERFSB2x7vuqNyIlHXTsr0';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -58,10 +48,10 @@ function stableSort(array, comparator) {
 
 const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
-    { id: 'calories', numeric: true, disablePadding: false, label: 'Email' },
-    { id: 'fat', numeric: true, disablePadding: false, label: 'Rol' },
-    { id: 'carbs', numeric: true, disablePadding: false, label: 'Phone' },
-    { id: 'protein', numeric: true, disablePadding: false, label: 'Registration date' },
+    { id: 'email', numeric: true, disablePadding: false, label: 'Email' },
+    { id: 'role', numeric: true, disablePadding: false, label: 'Rol' },
+    { id: 'phone', numeric: true, disablePadding: false, label: 'Phone' },
+    { id: 'registration', numeric: true, disablePadding: false, label: 'Registration date' },
 ];
 
 function EnhancedTableHead(props) {
@@ -75,10 +65,11 @@ function EnhancedTableHead(props) {
             <TableRow>
                 <TableCell padding="checkbox">
                     <Checkbox
+                        color='default'
                         indeterminate={numSelected > 0 && numSelected < rowCount}
                         checked={rowCount > 0 && numSelected === rowCount}
                         onChange={onSelectAllClick}
-                        inputProps={{ 'aria-label': 'select all desserts' }}
+                        inputProps={{ 'aria-label': 'select all users' }}
                     />
                 </TableCell>
                 {headCells.map((headCell) => (
@@ -146,14 +137,14 @@ const EnhancedTableToolbar = (props) => {
             className={clsx(classes.root, {
                 [classes.highlight]: numSelected > 0,
             })}
-            style={{minHeight:0}}
+            style={{minHeight:48, background: numSelected>0 ? '#CBCBCB' : '#ffffff'}}
         >
             {numSelected > 0 ? (
-                <Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
+                <Typography className={classes.title} variant="subtitle1" component="div" style={{color:'#000000'}}>
                     {numSelected} selected
                 </Typography>
             ) : (
-                    null
+                    null                
                 )}
 
             {numSelected > 0 ? (
@@ -208,16 +199,36 @@ const useStyles = makeStyles((theme) => ({
     iconButton: {
         padding: 10,
     },
+    selected: { 
+        '&$selected': {
+            backgroundColor: "#E7E7E7",
+        },
+    },
 }));
 
 export default function EnhancedTable() {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
+    const [orderBy, setOrderBy] = React.useState('email');
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [open, setOpen] = React.useState(false);
+    const [users, setUsers] = React.useState([]);
+
+    const getUsers = () => {
+        axios.get('https://150.136.172.48/api/user/all').then(function(response){
+          setUsers(response.data.data);
+          console.log(response);
+        }).catch(function(error){
+          console.log(error);
+        })
+      };
+    
+      useEffect (() =>{
+        getUsers();
+      }, []);
+
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -227,7 +238,7 @@ export default function EnhancedTable() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = rows.map((n) => n.name);
+            const newSelecteds = users.map((n) => n.data.email);
             setSelected(newSelecteds);
             return;
         }
@@ -273,7 +284,7 @@ export default function EnhancedTable() {
 
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
 
     return (
         <div className={classes.root}>
@@ -292,7 +303,7 @@ export default function EnhancedTable() {
                     </Paper>
                 </Grid>
                 <Grid item xs={6}>
-                    <Button variant="contained" style={{ position: 'absolute' }} style={{background:'#000'}} onClick={handleClickOpen}><span style={{color:'#fff'}}>Agregar Usuario</span></Button>
+                    <Button variant="contained" style={{ position: 'absolute', background:'#000' }} onClick={handleClickOpen}><span style={{color:'#fff'}}>Agregar Usuario</span></Button>
                     <Dialog open={open} handleClose={handleClose}/> 
                 </Grid>
             </Grid>
@@ -312,27 +323,31 @@ export default function EnhancedTable() {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={users.length}
                         />
                         <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
+                            {stableSort(users, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const isItemSelected = isSelected(row.name);
+                                    const isItemSelected = isSelected(row.data.email);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
                                         <TableRow
                                             hover
-                                            onClick={(event) => handleClick(event, row.name)}
+                                            onClick={(event) => handleClick(event, row.data.email)}
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={row.name}
+                                            key={row.data.email}
                                             selected={isItemSelected}
+                                            classes={{
+                                                selected: classes.selected,
+                                            }}
                                         >
                                             <TableCell padding="checkbox">
                                                 <Checkbox
+                                                    color='default'
                                                     checked={isItemSelected}
                                                     inputProps={{ 'aria-labelledby': labelId }}
                                                 />
@@ -340,13 +355,13 @@ export default function EnhancedTable() {
                                             <TableCell component="th" id={labelId} scope="row" padding="none">
                                                 <div style={{textAlign:'center', display:'flex'}}>
                                                     <Avatar alt="Remy Sharp" src={row.image} />
-                                                    <Typography style={{textAlign:'center', verticalAlign:'middle', lineHeight:3, paddingLeft:10}}>{row.name}</Typography>
+                                                    <Typography style={{textAlign:'center', verticalAlign:'middle', lineHeight:3, paddingLeft:10}}>{row.data.name}</Typography>
                                                 </div>
                                             </TableCell>
-                                            <TableCell align="right">{row.calories}</TableCell>
-                                            <TableCell align="right">{row.fat}</TableCell>
-                                            <TableCell align="right">{row.carbs}</TableCell>
-                                            <TableCell align="right">{row.protein}</TableCell>
+                                            <TableCell align="right">{row.data.email}</TableCell>
+                                            <TableCell align="right">{row.data.role == 0 ? 'Administrador' : row.data.role == 1 ? 'TI' : 'Finanzas'}</TableCell>
+                                            <TableCell align="right">{row.data.phone_number}</TableCell>
+                                            <TableCell align="right">{row.data.registration_date.substring(0,17)}</TableCell>
                                         </TableRow>
                                     );
                                 })}
@@ -361,7 +376,7 @@ export default function EnhancedTable() {
                 <TablePagination
                     rowsPerPageOptions={[10, 25]}
                     component="div"
-                    count={rows.length}
+                    count={users.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}
