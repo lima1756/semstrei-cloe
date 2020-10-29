@@ -119,20 +119,20 @@ class UserAPI(MethodView):
             auth_token = request.headers.get('Authorization').split(" ")[1]
             resp = UserData.decode_auth_token(auth_token)
             curr_is_admin = UserData.query.get(resp).admin
-            post_data = request.get_json()
+            data = request.get_json()
             user = UserData.query.get(id)
             if user:
-                if post_data.get('email'):
-                    user.email = post_data.get('email')
-                if post_data.get('password'):
-                    user.set_password(post_data.get('password'))
-                if post_data.get('name'):
-                    user.name = post_data.get('name')
-                if post_data.get('phone_number'):
-                    user.phone_number = post_data.get('phone_number')
-                if curr_is_admin and not (post_data.get('role') is None):
-                    user.role_id = post_data.get('role')
-                    user.admin = post_data.get('role') == 0
+                if data.get('email'):
+                    user.email = data.get('email')
+                if data.get('password'):
+                    user.set_password(data.get('password'))
+                if data.get('name'):
+                    user.name = data.get('name')
+                if data.get('phone_number'):
+                    user.phone_number = data.get('phone_number')
+                if curr_is_admin and not (data.get('role') is None):
+                    user.role_id = data.get('role')
+                    user.admin = data.get('role') == 0
                 db.session.add(user)
                 db.session.commit()
                 responseObject = {
@@ -182,7 +182,11 @@ class UserAPI(MethodView):
                     recipients=[email]
                 )
                 msg.html = render_template(
-                    "welcome.html", name=name, password=plain_password)
+                    "welcome.html", 
+                    name=name, 
+                    email=email, 
+                    password=plain_password
+                )
                 mail.send(msg)
                 db.session.add(user)
                 db.session.commit()

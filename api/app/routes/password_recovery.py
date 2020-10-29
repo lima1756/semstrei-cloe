@@ -1,6 +1,6 @@
 import logging
 import jwt
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, make_response, jsonify, render_template
 from flask.views import MethodView
 from flask_mail import Message
 
@@ -31,7 +31,11 @@ class RequestRecoverPassword(MethodView):
                     sender='a01634417@itesm.mx',
                     recipients=[email]
                 )
-                msg.body = token.key
+                msg.html = render_template(
+                    "recover_password.html", 
+                    name=user.name, 
+                    token=token.key
+                )
                 mail.send(msg)
                 responseObject = {
                     'status': 'success'
