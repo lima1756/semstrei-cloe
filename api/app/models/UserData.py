@@ -78,7 +78,6 @@ class UserData(db.Model):
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
-<<<<<<< HEAD
 
     def get_data_as_dict(self):
         return {
@@ -92,5 +91,3 @@ class UserData(db.Model):
             'role': self.role_id,
             'new_user': self.new_user
         }
-=======
->>>>>>> 97d401f24a4e0a54c8366b08fc9a8f44e854cf76
