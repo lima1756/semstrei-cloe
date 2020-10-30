@@ -27,9 +27,7 @@ def login_required(f):
         if auth_token:
             resp = UserData.decode_auth_token(auth_token)
             if isinstance(resp, int):
-                user = UserData.query.filter_by(
-                    id=resp
-                ).first()
+                user = UserData.query.get(resp)
                 if user and user.enabled:
                     return f(*args, **kwargs)
                 else:
@@ -44,7 +42,7 @@ def login_required(f):
                         'status': 'fail',
                         'message': 'There was a problem while logging in, please contact your administrator'
                     }
-                    return make_response(jsonify(responseObject)), 401
+                    return make_response(jsonify(responseObject)), 403
             responseObject = {
                 'status': 'fail',
                 'message': resp

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_mail import Mail
 
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -19,6 +20,7 @@ class App:
         if App.instance is None:
             App.instance = self
             self.app = Flask(__name__)
+            CORS(self.app)
             if app_config is None:
                 app_config = development_config
             self.app.config.from_object(app_config)
@@ -42,19 +44,22 @@ class App:
             from .middleware import event_logger
 
             # Registrando rutas
-            from .routes.user_management import user_management_blueprint
+            from .routes.user import user_blueprint
+            from .routes.password_recovery import password_recovery_blueprint
+            from .routes.auth import auth_blueprint
+            url_prefix = '/api'
+            self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                password_recovery_blueprint, 
+                url_prefix=url_prefix
+            )
+            self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
 
             # Registrando modelos
             from .models.BlacklistToken import BlacklistToken
             from .models.UserData import UserData
             from .models.RecoveryTokens import RecoveryTokens
             from .models.Role import Role
-
-            url_prefix = '/api'
-            self.app.register_blueprint(
-                user_management_blueprint, 
-                url_prefix=url_prefix
-            )
         else:
             raise Exception('Singletons must be accessed through `get_instance()`.')
 
