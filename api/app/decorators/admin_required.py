@@ -24,9 +24,7 @@ def admin_required(f):
             auth_token = ''
         if auth_token:
             resp = UserData.decode_auth_token(auth_token)
-            user = UserData.query.filter_by(
-                id=resp
-            ).first()
+            user = UserData.query.get(resp)
             if user.admin:
                 return f(*args, **kwargs)
             else:
