@@ -66,3 +66,15 @@ class UserData(db.Model):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
 
+    def get_data_as_dict(self):
+        return {
+            'user_id': self.id,
+            'email': self.email,
+            'name': self.name,
+            'phone_number': self.phone_number,
+            'admin': self.admin,
+            'enabled': self.enabled,
+            'registration_date': self.registered_on,
+            'role': self.role_id,
+            'new_user': self.new_user
+        }
