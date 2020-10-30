@@ -1,10 +1,6 @@
 import datetime
 from app import App
 
-
-JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
 db = App.get_instance().db
 
 

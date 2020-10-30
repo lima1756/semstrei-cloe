@@ -37,8 +37,12 @@ class Auth(MethodView):
                     responseObject = {
                         'status': 'success',
                         'message': 'Successfully logged in.',
+<<<<<<< HEAD
                         'auth_token': auth_token.decode(),
                         'user': user.get_data_as_dict()
+=======
+                        'auth_token': auth_token.decode()
+>>>>>>> 97d401f24a4e0a54c8366b08fc9a8f44e854cf76
                     }
                     return make_response(jsonify(responseObject)), 200
             else:

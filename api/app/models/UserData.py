@@ -1,4 +1,6 @@
 import jwt
+import string
+import random
 import datetime
 from app import App
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,6 +10,7 @@ JWT_KEY = 'JWT_KEY'
 app = App.get_instance().app
 db = App.get_instance().db
 
+
 class UserData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     admin = db.Column(db.Boolean, nullable=False, default=False)
@@ -15,18 +18,28 @@ class UserData(db.Model):
     email = db.Column(db.String(128), index=True, unique=True)
     registered_on = db.Column(db.DateTime, nullable=False)
     name = db.Column(db.String(128), nullable=False)
-    phone_number = db.Column(db.String(128), nullable=False)
+    phone_number = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256))
-    
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    new_user = db.Column(db.Boolean, default=True)
+    role = db.relationship('Role', backref='role', lazy=True)
 
-    def __init__(self, email, password, name, phone_number, admin=False):
+    def __init__(self, email, password, name, phone_number, role, admin=False):
         self.email = email
         self.password = self.set_password(password)
         self.name = name
         self.phone_number = phone_number
         self.admin = admin
+        self.role_id = role
         self.registered_on = datetime.datetime.now()
         self.enabled = True
+
+    @staticmethod
+    def gen_password(length=12):
+        password_characters = string.ascii_letters + string.digits
+        plain_password = ''.join(
+            (random.choice(password_characters) for i in range(length)))
+        return plain_password
 
     def __repr__(self):
         return '<UserData {}>'.format(self.email)
@@ -65,6 +78,7 @@ class UserData(db.Model):
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
+<<<<<<< HEAD
 
     def get_data_as_dict(self):
         return {
@@ -78,3 +92,5 @@ class UserData(db.Model):
             'role': self.role_id,
             'new_user': self.new_user
         }
+=======
+>>>>>>> 97d401f24a4e0a54c8366b08fc9a8f44e854cf76

@@ -11,7 +11,8 @@ class TestRecoveryTokens(BaseTestCase):
         email='test@test.com',
         password='test',
         name="test name",
-        phone_number="1234567"
+        phone_number="1234567",
+        role=1
     )
 
     def gen_token(self):
