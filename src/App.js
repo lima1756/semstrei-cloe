@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Users from './components/Users';
 import Account from './components/Account';
 import Dashboard from './components/Dashboard';
+//import ProtectedRoute from './components/ProtectedRoute';
 
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ function App() {
           <Route path='/users' component={Users} />
           <Route path='/account' component={Account} />
           <Route path='/login' component={Login} />
+          <Route path='*' component={() => '404 NOT FOUND'}/>
         </Switch>
       </Router>
     </div>

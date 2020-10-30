@@ -1,20 +1,29 @@
-import React, { useEffect} from 'react';
+import React from 'react';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
   FormLabel, FormControl, FormControlLabel, Grid, Radio, RadioGroup, TextField,
 } from '@material-ui/core';
 
 import axios from 'axios';
-import https from 'https'
+import https from 'https';
+
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 })
 axios.defaults.options = httpsAgent
-axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY1MTAyMDAsImlhdCI6MTYwMzkxODIwMCwiaWQiOjF9.ucki8xqRxG9MWLsCu43fszERFSB2x7vuqNyIlHXTsr0';
+axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY2ODQyMTgsImlhdCI6MTYwNDA5MjIxOCwiaWQiOjIwNn0.kkXFxmFVmq1G13OLLv3jpHLXC1E8Kfn1hJL6YEM16fc';
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export default function AlertDialog({ open, handleClose }) {
   const [value, setValueR] = React.useState('');
+  const [error, setError] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
 
   const handleChange = (event) => {
     setValueR(event.target.value);
@@ -26,17 +35,36 @@ export default function AlertDialog({ open, handleClose }) {
     handleClose();
   };
 
+  const showSuccess = () => {
+    setSuccess(false);
+  };
+
+  const showError = () => {
+    setError(false);
+  };
+
   const registerUser = (name, mail, role) => {
     axios.post('https://150.136.172.48/api/user', { 
       email: mail, 
       name: name,
-      role: role == 'admin' ? 0 : role == 'tech' ? 1 : 2
+      role: role === 'admin' ? 0 : role === 'tech' ? 1 : 2
     }).then(function(response){
       console.log(response);
+      setSuccess(true);
     }).catch(function(error){
       console.log(error);
+      setError(true);
     })
   };
+
+  const handleCloseSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+        return;
+    }
+
+    setSuccess(false);
+    setError(false);
+};
 
   return (
     <div>
@@ -77,6 +105,24 @@ export default function AlertDialog({ open, handleClose }) {
           </Button>
         </DialogActions>
       </Dialog>
+      {
+        success ? 
+        <Snackbar open={success} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success">
+            El usuario se agregó correctamente.
+        </Alert>
+      </Snackbar> :
+        null
+      }
+      {
+        error ? 
+        <Snackbar open={error} autoHideDuration={6000} onClose={handleCloseSnack}>
+        <Alert onClose={handleClose} severity="error">
+            Ocurrió un error al agregar al usuario.
+        </Alert>
+      </Snackbar>
+        : null
+      }
     </div>
   );
 }

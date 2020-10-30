@@ -18,7 +18,7 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 })
 axios.defaults.options = httpsAgent
-axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY1MTAyMDAsImlhdCI6MTYwMzkxODIwMCwiaWQiOjF9.ucki8xqRxG9MWLsCu43fszERFSB2x7vuqNyIlHXTsr0';
+axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY2ODQyMTgsImlhdCI6MTYwNDA5MjIxOCwiaWQiOjIwNn0.kkXFxmFVmq1G13OLLv3jpHLXC1E8Kfn1hJL6YEM16fc';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -219,7 +219,7 @@ export default function EnhancedTable() {
     const getUsers = () => {
         axios.get('https://150.136.172.48/api/user/all').then(function(response){
           setUsers(response.data.data);
-          console.log(response);
+          console.log('Response: ',response);
         }).catch(function(error){
           console.log(error);
         })
@@ -279,6 +279,8 @@ export default function EnhancedTable() {
       };
     
       const handleClose = () => {
+        //console.log('Dime que pasas');
+        getUsers();
         setOpen(false);
       };
 
@@ -329,17 +331,17 @@ export default function EnhancedTable() {
                             {stableSort(users, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const isItemSelected = isSelected(row.data.email);
+                                    const isItemSelected = isSelected(row.email);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
                                         <TableRow
                                             hover
-                                            onClick={(event) => handleClick(event, row.data.email)}
+                                            onClick={(event) => handleClick(event, row.email)}
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={row.data.email}
+                                            key={row.email}
                                             selected={isItemSelected}
                                             classes={{
                                                 selected: classes.selected,
@@ -355,13 +357,13 @@ export default function EnhancedTable() {
                                             <TableCell component="th" id={labelId} scope="row" padding="none">
                                                 <div style={{textAlign:'center', display:'flex'}}>
                                                     <Avatar alt="Remy Sharp" src={row.image} />
-                                                    <Typography style={{textAlign:'center', verticalAlign:'middle', lineHeight:3, paddingLeft:10}}>{row.data.name}</Typography>
+                                                    <Typography style={{textAlign:'center', verticalAlign:'middle', lineHeight:3, paddingLeft:10}}>{row.name}</Typography>
                                                 </div>
                                             </TableCell>
-                                            <TableCell align="right">{row.data.email}</TableCell>
-                                            <TableCell align="right">{row.data.role == 0 ? 'Administrador' : row.data.role == 1 ? 'TI' : 'Finanzas'}</TableCell>
-                                            <TableCell align="right">{row.data.phone_number}</TableCell>
-                                            <TableCell align="right">{row.data.registration_date.substring(0,17)}</TableCell>
+                                            <TableCell align="right">{row.email}</TableCell>
+                                            <TableCell align="right">{row.role === 0 ? 'Administrador' : row.role === 1 ? 'TI' : 'Finanzas'}</TableCell>
+                                            <TableCell align="right">{row.phone_number}</TableCell>
+                                            <TableCell align="right">{row.registration_date.substring(0,17)}</TableCell>
                                         </TableRow>
                                     );
                                 })}

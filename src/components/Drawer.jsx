@@ -2,12 +2,14 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link, } from 'react-router-dom';
 import { 
-  AppBar, Avatar, Box, CssBaseline, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography
+  AppBar, Avatar, Box,Button, CssBaseline, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography
 } from '@material-ui/core';
 import EqualizerRoundedIcon from '@material-ui/icons/EqualizerRounded';
 import GroupRoundedIcon from '@material-ui/icons/GroupRounded';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import Bar from './AppBar';
+
+import auth from '../auth';
 
 const drawerWidth = 240;
 
@@ -45,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ClippedDrawer(index) {
+export default function ClippedDrawer({props}) {
   const classes = useStyles();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
@@ -112,13 +114,13 @@ export default function ClippedDrawer(index) {
               </ListItem>
           </List>
           <Divider />
-            <Typography 
-              style={{ position: 'absolute', bottom: 0, left: 0 }}
-              component={Link}
-              to={'/login'}
-              >
-              Cerrar sesión
-            </Typography>
+          <Button 
+          component={Link} 
+          to={'/login'}
+          style={{marginTop:20}}
+          variant='outlined'>
+            Cerrar sesion
+          </Button>
         </div>
       </Drawer>
       <main className={classes.content}>
