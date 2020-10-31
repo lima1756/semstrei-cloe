@@ -1,12 +1,14 @@
 import os
 import logging
 from dotenv import load_dotenv
-from app.oracle_libs import oracle_cx
+from app.libs import oracle_cx
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv()
+
+
 class BaseConfig:
     """Base configuration."""
-    ENVIRONMENT_TYPE="BASE"
+    ENVIRONMENT_TYPE = "BASE"
     JWT_KEY = os.getenv('SECRET_KEY', 'a_really_secret_key')
     DEBUG = False
     LOGGING_LEVEL = logging.WARN
@@ -19,10 +21,11 @@ class BaseConfig:
         protocol='tcps',
         host='adb.us-ashburn-1.oraclecloud.com',
         port='1522',
-        service_name=os.getenv('DATABASE_ORACLE_SERVICE', 'key_adb_high.adb.oraclecloud.com'),
+        service_name=os.getenv('DATABASE_ORACLE_SERVICE',
+                               'key_adb_high.adb.oraclecloud.com'),
     )
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL'+ENVIRONMENT_TYPE, 
+        'DATABASE_URL'+ENVIRONMENT_TYPE,
         oracle_connection.get_connection_string()
     )
     MAIL_SERVER = os.getenv('MAIL_SERVER')
@@ -32,9 +35,10 @@ class BaseConfig:
     MAIL_USE_TLS = True
     MAIL_DEBUG = 0
 
+
 class DevelopmentConfig(BaseConfig):
     """Development configuration."""
-    ENVIRONMENT_TYPE="DEV"
+    ENVIRONMENT_TYPE = "DEV"
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     LOGGING_LEVEL = logging.DEBUG
@@ -42,18 +46,18 @@ class DevelopmentConfig(BaseConfig):
 
 class TestingConfig(BaseConfig):
     """Testing configuration."""
-    ENVIRONMENT_TYPE="TEST"
+    ENVIRONMENT_TYPE = "TEST"
     DEBUG = True
     TESTING = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     LOGGING_LEVEL = logging.WARNING
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL_TEST', 'sqlite:///' + os.path.join(basedir, 'app_test.db'))
+        'DATABASE_URL_TEST', 'sqlite:///' + os.path.join(basedir, '../tests/app/app_test.db'))
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration."""
-    ENVIRONMENT_TYPE="PROD"
+    ENVIRONMENT_TYPE = "PROD"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LOGGING_LEVEL = logging.DEBUG
     LOGGING_FILE = 'server.prod.log'

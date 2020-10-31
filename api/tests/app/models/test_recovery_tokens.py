@@ -1,11 +1,10 @@
 import unittest
-from ..base import BaseTestCase
-BaseTestCase.create_app()
+from ..base_test_app import BaseTestApp
 from app.models.RecoveryTokens import RecoveryTokens
 from app.models.UserData import UserData
 
 
-class TestRecoveryTokens(BaseTestCase):    
+class TestRecoveryTokens(BaseTestApp):
 
     user = UserData(
         email='test@test.com',

@@ -4,12 +4,10 @@ from flask.views import MethodView
 
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
-from app.decorators.login_required import login_required
-from app import App
+from app.libs.decorators import login_required
+from app.libs import db
 
 auth_blueprint = Blueprint('auth', __name__)
-
-db = App.get_instance().db
 
 
 class Auth(MethodView):

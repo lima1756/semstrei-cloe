@@ -1,8 +1,7 @@
 import jwt
 import datetime
-from app import App
+from app.libs import db
 
-db = App.get_instance().db
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -7,14 +7,11 @@ from flask_mail import Message
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
 from app.models.RecoveryTokens import RecoveryTokens
-from app.decorators.admin_required import admin_required
-from app.decorators.login_required import login_required
-from app import App
+from app.libs.decorators import admin_required
+from app.libs.decorators import login_required
+from app.libs import db, mail
 
 user_blueprint = Blueprint('user', __name__)
-
-mail = App.get_instance().mail
-db = App.get_instance().db
 
 
 class UserAPI(MethodView):
@@ -79,7 +76,7 @@ class UserAPI(MethodView):
         try:
             users = UserData.query.all()
             if page_size == -1:
-                page_size = len(users) 
+                page_size = len(users)
             users_data = []
             for i in range(page * page_size, (page + 1) * page_size):
                 if i >= len(users) or i < 0:
@@ -116,7 +113,7 @@ class UserAPI(MethodView):
                     user.name = data.get('name')
                 if data.get('phone_number'):
                     user.phone_number = data.get('phone_number')
-                if curr_is_admin and not (data.get('role') is None):
+                if curr_is_admin and data.get('role') is not None:
                     user.role_id = data.get('role')
                     user.admin = data.get('role') == 0
                 db.session.add(user)
@@ -168,9 +165,9 @@ class UserAPI(MethodView):
                     recipients=[email]
                 )
                 msg.html = render_template(
-                    "welcome.html", 
-                    name=name, 
-                    email=email, 
+                    "welcome.html",
+                    name=name,
+                    email=email,
                     password=plain_password
                 )
                 mail.send(msg)

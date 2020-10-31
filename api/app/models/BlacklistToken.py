@@ -1,7 +1,5 @@
 import datetime
-from app import App
-
-db = App.get_instance().db
+from app.libs import db
 
 
 class BlacklistToken(db.Model):
@@ -29,4 +27,3 @@ class BlacklistToken(db.Model):
             return True
         else:
             return False
-

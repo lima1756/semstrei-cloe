@@ -1,11 +1,10 @@
 import unittest
-from ..base import BaseTestCase
-BaseTestCase.create_app()
+from ..base_test_app import BaseTestApp
 from app.models.UserData import UserData
 
 
-class TestUserModel(BaseTestCase):
-    
+class TestUserModel(BaseTestApp):
+
     def test_encode_auth_token(self):
         user = UserData(
             email='test@test.com',
