@@ -7,6 +7,17 @@ from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from .middleware import event_logger
+#rutas
+from .routes.user import user_blueprint
+from .routes.password_recovery import password_recovery_blueprint
+from .routes.auth import auth_blueprint
+# modelos
+from .models.BlacklistToken import BlacklistToken
+from .models.UserData import UserData
+from .models.RecoveryTokens import RecoveryTokens
+from .models.Role import Role
+
 
 from app.config import DevelopmentConfig as development_config
 
@@ -40,13 +51,7 @@ class App:
                 filename= logging_dir + logging_file if logging_file else None
             )
 
-            # Registrando Middleware
-            from .middleware import event_logger
-
             # Registrando rutas
-            from .routes.user import user_blueprint
-            from .routes.password_recovery import password_recovery_blueprint
-            from .routes.auth import auth_blueprint
             url_prefix = '/api'
             self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
             self.app.register_blueprint(
@@ -54,12 +59,6 @@ class App:
                 url_prefix=url_prefix
             )
             self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
-
-            # Registrando modelos
-            from .models.BlacklistToken import BlacklistToken
-            from .models.UserData import UserData
-            from .models.RecoveryTokens import RecoveryTokens
-            from .models.Role import Role
         else:
             raise Exception('Singletons must be accessed through `get_instance()`.')
 
