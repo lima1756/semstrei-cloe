@@ -76,5 +76,7 @@ class BaseTestApp(TestCase):
         return self.app
 
     def assert_success(self, res, message=''):
-        self.assertTrue(json.loads(res.data)[
-                        'status'] == 'success', 'Request failed:'+message)
+        self.assertTrue(
+            json.loads(res.data)['status'] == 'success',
+            'Request failed:'+message
+        )

@@ -143,19 +143,19 @@ class UserAPI(MethodView):
     @login_required
     @admin_required
     def post(self):
-        post_data = request.get_json()
-        user = UserData.query.filter_by(email=post_data.get('email')).first()
-        role = post_data.get('role')
+        data = request.get_json()
+        user = UserData.query.filter_by(email=data.get('email')).first()
+        role = data.get('role')
         if not user:
             plain_password = UserData.gen_password()
-            email = post_data.get('email')
-            name = post_data.get('name')
+            email = data.get('email')
+            name = data.get('name')
             try:
                 user = UserData(
                     email=email,
                     password=plain_password,
                     name=name,
-                    phone_number=post_data.get('phone_number'),
+                    phone_number=data.get('phone_number'),
                     admin=(role == 0),
                     role=role
                 )
@@ -220,23 +220,43 @@ class UserAPI(MethodView):
                 }
                 return make_response(jsonify(responseObject)), 404
 
-    @login_required
-    @admin_required
-    def delete(self, id):
+    def delete_user(self, id):
         user = UserData.query.get(id)
         if user:
             db.session.delete(user)
-            db.session.commit()
-            responseObject = {
-                'status': 'success',
-            }
-            return make_response(jsonify(responseObject)), 201
         else:
-            responseObject = {
-                'status': 'fail',
-                'message': 'User doesn\'t exist'
-            }
-            return make_response(jsonify(responseObject)), 404
+            raise IndexError("user with id "+str(id)+" not found")
+
+    @login_required
+    @admin_required
+    def delete(self, id):
+        count = 0
+        if id is None:
+            data = request.get_json()
+            users = data.get('users')
+            if users is not None:
+                for id in users:
+                    try:
+                        self.delete_user(id)
+                        count += 1
+                    except IndexError as e:
+                        pass
+        else:
+            try:
+                self.delete_user(id)
+                count += 1
+            except IndexError as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'User doesn\'t exist'
+                }
+                return make_response(jsonify(responseObject)), 404
+        db.session.commit()
+        responseObject = {
+            'status': 'success',
+            'deleted': count
+        }
+        return make_response(jsonify(responseObject)), 201
 
 
 # define the API resources
