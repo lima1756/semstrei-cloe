@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 
 class Dimension:
     """
@@ -11,7 +13,7 @@ class Dimension:
 
     _dimension_name = ""     # Nombre de la dimension
     _categories = []        # Relacion nombres tipos/categorias de una dimension vs el index asignado en esa dimension
-                            # el index de la {categoria} debe coincidir con el indice de su vector numerico.
+    # el index de la {categoria} debe coincidir con el indice de su vector numerico.
 
     def __init__(self, name, categories):
         self._dimension_name = name
@@ -41,6 +43,11 @@ class Dimension:
         if category_name not in self._categories:
             return None
         return self._categories.index(category_name)
+
+    def __deepcopy__(self, memodict={}):
+        categories_copy = deepcopy(self._categories)
+        dimension_copy = Dimension(self._dimension_name, categories_copy)
+        return dimension_copy
 
     def __eq__(self, other):
         if type(self) != type(other):
@@ -93,10 +100,13 @@ class Header:
         self._dimensions = dimensions
         self._vector_name = name
 
-    def add_dimension(self, dimension):
+    def add_dimension_last(self, dimension):
         self._dimensions.append(dimension)
 
-    def remove_dimension(self):
+    def insert_dimension(self, index, dimension):
+        self._dimensions.insert(index, dimension)
+
+    def remove_last_dimension(self):
         if len(self._dimensions) > 0:
             return self._dimensions.pop()
         return None
@@ -133,6 +143,11 @@ class Header:
             result.append(self.get_index_category(self._dimensions[i].get_name(),
                                                   categories_each_dimension[i])[-1])
         return tuple(result)
+
+    def __deepcopy__(self, memodict={}):
+        dimensions_copy = deepcopy(self._dimensions)
+        header_copy = Header(self._vector_name, dimensions_copy)
+        return header_copy
 
     def __eq__(self, other):
         if type(self) != type(other):
@@ -194,7 +209,7 @@ class SuperVector:
     def set_header(self, header):
         self._header = header
 
-    def are_same_type(self, other):
+    def is_same_type(self, other):
         return self.get_header() == other.get_header()
 
     def get_index_dimension(self, dimension_name):
