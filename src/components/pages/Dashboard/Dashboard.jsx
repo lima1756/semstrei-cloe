@@ -1,35 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Drawer from './Drawer'
+import React from 'react';
+import Drawer from '../AppBarDrawer/Drawer'
 import { Chart } from 'react-charts';
 import { Button, Grid } from '@material-ui/core';
-
-import useDemoConfig from "./useDemoConfig";
-import useLagRadar from "./useLagRadar";
 import ResizableBox from "./ResizableBox";
 import "./style.css";
 
 export default function Dashboard() {
-  //useLagRadar();
-
-  const { dataThird, randomizeData } = useDemoConfig({
-    dataType: "linear",
-    series: 10,
-    useR: true
-  });
-
   const series = React.useMemo(
     () => ({
       type: "bubble",
       showPoints: false
     }),
-    []
-  );
-
-  const axesThird = React.useMemo(
-    () => [
-      { primary: true, type: "linear", position: "bottom" },
-      { type: "linear", position: "left" }
-    ],
     []
   );
 

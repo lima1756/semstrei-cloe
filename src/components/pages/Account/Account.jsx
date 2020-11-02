@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Avatar, Box, Button, Card, CardContent, Divider, Grid, TextField, Typography } from '@material-ui/core';
 import { makeStyles, } from '@material-ui/core/styles';
-import Drawer from './Drawer';
-import CircularProgress from '@material-ui/core/CircularProgress';
-
+import Drawer from '../AppBarDrawer/Drawer';
+import { useSnackbar } from 'notistack';
 import axios from 'axios';
 import https from 'https';
-import clsx from 'clsx';
-import { green } from '@material-ui/core/colors';
+import { useSelector, useDispatch } from 'react-redux';
+import { userinformation } from '../../../redux/actions';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 })
-axios.defaults.options = httpsAgent
-axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY2ODQyMTgsImlhdCI6MTYwNDA5MjIxOCwiaWQiOjIwNn0.kkXFxmFVmq1G13OLLv3jpHLXC1E8Kfn1hJL6YEM16fc';
-//marginTop:70
+axios.defaults.options = httpsAgent;
+
 const useStyles = makeStyles((theme) => ({
   infoCard: {
     display: 'flex',
@@ -49,32 +47,16 @@ const useStyles = makeStyles((theme) => ({
   infoPad: {
     paddingTop: theme.spacing(2),
   },
-  buttonSuccess: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgress: {
-    color: green[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: 2,
-    marginLeft: -12,
-  },
 }));
 
 export default function MediaControlCard() {
   const classes = useStyles();
-  const [update, setUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
   const timer = React.useRef();
-
-  const buttonClassname = clsx({
-    [classes.buttonSuccess]: success,
-  });
+  const isLogged = useSelector(state => state.logged);
+  const user = useSelector(state => state.user);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     return () => {
@@ -83,14 +65,22 @@ export default function MediaControlCard() {
   }, []);
 
   const updateInfo = (name, mail, phone) => {
-    axios.put('https://150.136.172.48/api/user/21', {
+    axios.put(`https://150.136.172.48/api/user/${user.userId}`, {
       email: mail === '' ? null : mail,
       name: name === '' ? null : name,
       phone_number: phone === '' ? null : phone
+    },{
+      headers: {
+        'Authorization': `Bearer ${isLogged.token}`
+      }
     }).then(function (response) {
-      setUpdate(true);
+      dispatch(userinformation(user.admin, user.newUser, name === '' ? user.name : name, mail === '' ? user.mail : mail, phone === '' ? user.phone : phone, user.role, user.userId));
+      document.getElementById('name').value = null;
+      document.getElementById('mail').value = null;
+      document.getElementById('phone').value = null;
+      handleSuccessUpdate('success');
     }).catch(function (error) {
-      console.log(error);
+      handleErrorUpdate('error');
     })
   };
 
@@ -98,14 +88,18 @@ export default function MediaControlCard() {
     updateInfo(document.getElementById('name').value, document.getElementById('mail').value, document.getElementById('phone').value);
 
     if (!loading) {
-      setSuccess(false);
       setLoading(true);
       timer.current = window.setTimeout(() => {
-        setSuccess(true);
         setLoading(false);
       }, 2000);
     }
   };
+
+// -----------------------Snackbar de update-------------------------
+const handleSuccessUpdate = (variant) => { enqueueSnackbar('La información se actualizó correctamente.', {variant}) };
+
+// -----------------------Snackbar de Error-------------------------
+const handleErrorUpdate = (variant) => { enqueueSnackbar('No se pudo actualizar la información, intente más tarde.', {variant}) };
 
   return (
     <div>
@@ -117,16 +111,13 @@ export default function MediaControlCard() {
               <Grid item xs={6}>
                 <CardContent>
                   <Typography component="h5" variant="h5">
-                    Eduardo Alonso Herrera
+                    {user.name}
                 </Typography>
                   <Typography variant="subtitle1" color="textSecondary" className={classes.infoPad}>
-                    eduardo.alonsoh@gmail.com
+                    {user.mail}
                 </Typography>
                   <Typography variant="subtitle1" color="textSecondary" className={classes.infoPad}>
-                    Guadalajara, Mexico
-                </Typography>
-                  <Typography variant="subtitle1" color="textSecondary" className={classes.infoPad}>
-                    (11) 1122334455
+                    {user.phone}
                 </Typography>
                 </CardContent>
                 <Divider variant='middle' style={{ marginTop: 20 }} />
@@ -156,14 +147,12 @@ export default function MediaControlCard() {
                 </form>
                 <Box className={classes.controlsAccount}>
                   <Button
-                    className={buttonClassname}
                     variant="outlined"
                     style={{ margin: 'auto' }}
                     disabled={loading}
                     onClick={handleUpdateClick}>
-                    <span style={{ color: success ? '#ffffff' : '#000000' }}> Actualizar Información </span>
+                    <span style={{ color: '#000000' }}> Actualizar Información </span>
                   </Button>
-                  {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </Box>
               </CardContent>
             </div>

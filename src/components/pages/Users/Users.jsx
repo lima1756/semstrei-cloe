@@ -1,24 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
     Avatar, Button, Checkbox, Grid, IconButton, InputBase, lighten, makeStyles, Paper, Table, TableBody, 
     TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Tooltip, Typography
 } from '@material-ui/core';
-
 import DeleteIcon from '@material-ui/icons/Delete';
 import SearchIcon from '@material-ui/icons/Search';
 import Dialog from './NewUser';
-import Drawer from './Drawer'
-
+import Drawer from '../AppBarDrawer/Drawer';
+import { useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
 import axios from 'axios';
 import https from 'https';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
-})
-axios.defaults.options = httpsAgent
-axios.defaults.headers.common['Authorization'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDY2ODQyMTgsImlhdCI6MTYwNDA5MjIxOCwiaWQiOjIwNn0.kkXFxmFVmq1G13OLLv3jpHLXC1E8Kfn1hJL6YEM16fc';
+});
+axios.defaults.options = httpsAgent;
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -208,27 +207,33 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EnhancedTable() {
     const classes = useStyles();
-    const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('email');
-    const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
-    const [open, setOpen] = React.useState(false);
-    const [users, setUsers] = React.useState([]);
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('email');
+    const [selected, setSelected] = useState([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [open, setOpen] = useState(false);
+    const [users, setUsers] = useState([]);
+    const isLogged = useSelector(state => state.logged);
+    const { enqueueSnackbar } = useSnackbar();
 
     const getUsers = () => {
-        axios.get('https://150.136.172.48/api/user/all').then(function(response){
+        axios.get('https://150.136.172.48/api/user/all',{
+            headers: {
+                'Authorization': `Bearer ${isLogged.token}`
+              }
+        })
+        .then(function(response){
           setUsers(response.data.data);
-          console.log('Response: ',response);
+          //console.log('Response: ',response);
         }).catch(function(error){
-          console.log(error);
+            handleErrorLoadingUsers('error');
+            //console.log(error);
         })
       };
     
-      useEffect (() =>{
-        getUsers();
-      }, []);
-
+      // eslint-disable-next-line
+      useEffect (() =>{ getUsers() }, []);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -279,10 +284,11 @@ export default function EnhancedTable() {
       };
     
       const handleClose = () => {
-        //console.log('Dime que pasas');
         getUsers();
         setOpen(false);
       };
+//-----------------------Snackbar de Error-------------------------
+const handleErrorLoadingUsers = (variant) => { enqueueSnackbar('Ocurrió un error al cargar los usuarios.', {variant}) };
 
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
