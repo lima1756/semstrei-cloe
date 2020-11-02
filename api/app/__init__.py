@@ -1,16 +1,16 @@
 import os
 import logging
 from dotenv import load_dotenv
-from flask_mail import Mail
-
 from flask import Flask
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from .libs.extentions import db
+from .libs.extentions import migrate
+from .libs.extentions import mail
+# rutas
+from .routes import user_blueprint, password_recovery_blueprint, auth_blueprint
+# modelos
+import app.models
 
-from app.config import DevelopmentConfig as development_config
-
-load_dotenv()
 
 class App:
 
@@ -20,13 +20,17 @@ class App:
         if App.instance is None:
             App.instance = self
             self.app = Flask(__name__)
+            self.db = db
+            self.migrate = migrate
+            self.mail = mail
+
             CORS(self.app)
-            if app_config is None:
-                app_config = development_config
             self.app.config.from_object(app_config)
-            self.db = SQLAlchemy(self.app)
-            self.migrate = Migrate(self.app, self.db)
-            self.mail = Mail(self.app)
+
+            self.db.init_app(self.app)
+            self.migrate.init_app(self.app, self.db)
+            self.mail.init_app(self.app)
+
             # configuring mail logger
             self.app.extensions['mail'].debug = 0
             # Configuring logger
@@ -37,34 +41,23 @@ class App:
             logging.basicConfig(
                 level=self.app.config.get('LOGGING_LEVEL'),
                 format=self.app.config.get('LOGGING_FORMAT'),
-                filename= logging_dir + logging_file if logging_file else None
+                filename=logging_dir + logging_file if logging_file else None
             )
 
-            # Registrando Middleware
-            from .middleware import event_logger
-
             # Registrando rutas
-            from .routes.user import user_blueprint
-            from .routes.password_recovery import password_recovery_blueprint
-            from .routes.auth import auth_blueprint
             url_prefix = '/api'
             self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
             self.app.register_blueprint(
-                password_recovery_blueprint, 
+                password_recovery_blueprint,
                 url_prefix=url_prefix
             )
             self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
-
-            # Registrando modelos
-            from .models.BlacklistToken import BlacklistToken
-            from .models.UserData import UserData
-            from .models.RecoveryTokens import RecoveryTokens
-            from .models.Role import Role
         else:
-            raise Exception('Singletons must be accessed through `get_instance()`.')
+            raise Exception(
+                'Singletons must be accessed through `get_instance()`.')
 
     @classmethod
-    def get_instance(cls, app_config = None):
+    def get_instance(cls, app_config=None):
         if cls.instance is None:
             return App(app_config)
         return cls.instance

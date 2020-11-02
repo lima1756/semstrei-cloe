@@ -6,12 +6,9 @@ from flask_mail import Message
 
 from app.models.UserData import UserData
 from app.models.RecoveryTokens import RecoveryTokens
-from app import App
+from app.libs import db, mail
 
 password_recovery_blueprint = Blueprint('passsword_recovery', __name__)
-
-mail = App.get_instance().mail
-db = App.get_instance().db
 
 
 class RequestRecoverPassword(MethodView):
@@ -32,8 +29,8 @@ class RequestRecoverPassword(MethodView):
                     recipients=[email]
                 )
                 msg.html = render_template(
-                    "recover_password.html", 
-                    name=user.name, 
+                    "recover_password.html",
+                    name=user.name,
                     token=token.key
                 )
                 mail.send(msg)

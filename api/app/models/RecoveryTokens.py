@@ -1,12 +1,11 @@
 import jwt
+import os
 import datetime
-from app import App
+from dotenv import load_dotenv
+from app.libs import db
 
-
+load_dotenv()
 JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
-db = App.get_instance().db
 
 
 class RecoveryTokens(db.Model):
@@ -26,15 +25,15 @@ class RecoveryTokens(db.Model):
         }
         self.key = jwt.encode(
             payload,
-            app.config.get(JWT_KEY),
+            os.getenv(JWT_KEY),
             algorithm='HS256'
-        ).decode() # This decode is so the binary jwt is processed as string so the DB doesn't try to decode it itself
-    
+        ).decode()  # This decode is so the binary jwt is processed as string so the DB doesn't try to decode it itself
+
     @staticmethod
     def validate_key(key):
         payload = jwt.decode(
             key,
-            app.config.get(JWT_KEY),
+            os.getenv(JWT_KEY),
             algorithms=['HS256']
         )
         return payload['id']

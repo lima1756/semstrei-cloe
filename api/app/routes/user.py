@@ -7,14 +7,11 @@ from flask_mail import Message
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
 from app.models.RecoveryTokens import RecoveryTokens
-from app.decorators.admin_required import admin_required
-from app.decorators.login_required import login_required
-from app import App
+from app.libs.decorators import admin_required
+from app.libs.decorators import login_required
+from app.libs import db, mail
 
 user_blueprint = Blueprint('user', __name__)
-
-mail = App.get_instance().mail
-db = App.get_instance().db
 
 
 class UserAPI(MethodView):
@@ -79,7 +76,7 @@ class UserAPI(MethodView):
         try:
             users = UserData.query.all()
             if page_size == -1:
-                page_size = len(users) 
+                page_size = len(users)
             users_data = []
             for i in range(page * page_size, (page + 1) * page_size):
                 if i >= len(users) or i < 0:
@@ -116,7 +113,7 @@ class UserAPI(MethodView):
                     user.name = data.get('name')
                 if data.get('phone_number'):
                     user.phone_number = data.get('phone_number')
-                if curr_is_admin and not (data.get('role') is None):
+                if curr_is_admin and data.get('role') is not None:
                     user.role_id = data.get('role')
                     user.admin = data.get('role') == 0
                 db.session.add(user)
@@ -146,19 +143,19 @@ class UserAPI(MethodView):
     @login_required
     @admin_required
     def post(self):
-        post_data = request.get_json()
-        user = UserData.query.filter_by(email=post_data.get('email')).first()
-        role = post_data.get('role')
+        data = request.get_json()
+        user = UserData.query.filter_by(email=data.get('email')).first()
+        role = data.get('role')
         if not user:
             plain_password = UserData.gen_password()
-            email = post_data.get('email')
-            name = post_data.get('name')
+            email = data.get('email')
+            name = data.get('name')
             try:
                 user = UserData(
                     email=email,
                     password=plain_password,
                     name=name,
-                    phone_number=post_data.get('phone_number'),
+                    phone_number=data.get('phone_number'),
                     admin=(role == 0),
                     role=role
                 )
@@ -168,9 +165,9 @@ class UserAPI(MethodView):
                     recipients=[email]
                 )
                 msg.html = render_template(
-                    "welcome.html", 
-                    name=name, 
-                    email=email, 
+                    "welcome.html",
+                    name=name,
+                    email=email,
                     password=plain_password
                 )
                 mail.send(msg)
@@ -223,23 +220,43 @@ class UserAPI(MethodView):
                 }
                 return make_response(jsonify(responseObject)), 404
 
-    @login_required
-    @admin_required
-    def delete(self, id):
+    def delete_user(self, id):
         user = UserData.query.get(id)
         if user:
             db.session.delete(user)
-            db.session.commit()
-            responseObject = {
-                'status': 'success',
-            }
-            return make_response(jsonify(responseObject)), 201
         else:
-            responseObject = {
-                'status': 'fail',
-                'message': 'User doesn\'t exist'
-            }
-            return make_response(jsonify(responseObject)), 404
+            raise IndexError("user with id "+str(id)+" not found")
+
+    @login_required
+    @admin_required
+    def delete(self, id):
+        count = 0
+        if id is None:
+            data = request.get_json()
+            users = data.get('users')
+            if users is not None:
+                for id in users:
+                    try:
+                        self.delete_user(id)
+                        count += 1
+                    except IndexError as e:
+                        pass
+        else:
+            try:
+                self.delete_user(id)
+                count += 1
+            except IndexError as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'User doesn\'t exist'
+                }
+                return make_response(jsonify(responseObject)), 404
+        db.session.commit()
+        responseObject = {
+            'status': 'success',
+            'deleted': count
+        }
+        return make_response(jsonify(responseObject)), 201
 
 
 # define the API resources

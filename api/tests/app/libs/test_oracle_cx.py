@@ -3,12 +3,11 @@ import json
 import cx_Oracle
 import logging
 
-from app.oracle_libs import oracle_cx
-from ..base import BaseTestCase
+from app.libs import oracle_cx
+from ..base_test_app import BaseTestApp
 
-BaseTestCase.create_app()
 
-class TestUserCX(BaseTestCase):
+class TestOracleCX(BaseTestApp):
 
     connection = oracle_cx(
         "test_user",
@@ -25,7 +24,8 @@ class TestUserCX(BaseTestCase):
         '(security=(ssl_server_cert_dn="CN=adwc.uscom-east-1.oraclecloud.com,OU=Oracle BMCS US,O=Oracle Corporation,L=Redwood City,ST=California,C=US")))'
 
     def test_connection_header(self):
-        self.assertTrue(self.connection.connection_header == self.expected_header)
+        self.assertTrue(self.connection.connection_header ==
+                        self.expected_header)
 
     def test_tns(self):
         self.assertTrue(self.connection.tns_name == self.expected_tns)
@@ -36,11 +36,12 @@ class TestUserCX(BaseTestCase):
 
     def test_oracle_default_connection(self):
         try:
-            oracle_connection = self.connection.get_oracle_default_connection('test_name')
+            oracle_connection = self.connection.get_oracle_default_connection(
+                'test_name')
             cursor = oracle_connection.cursor()
             result = cursor.execute("select dummy from dual")
             for row in result:
-                self.assertTrue(row[0]=='X')
+                self.assertTrue(row[0] == 'X')
         except cx_Oracle.DatabaseError:
-            logging.warning("Couldn't resolve TNS, probably wallet hasn't been added to OracleClient/network/admin Please look at the readme project")
-
+            logging.warning(
+                "Couldn't resolve TNS, probably wallet hasn't been added to OracleClient/network/admin Please look at the readme project")

@@ -2,13 +2,13 @@ import jwt
 import string
 import random
 import datetime
-from app import App
+import os
+from dotenv import load_dotenv
+from app.libs import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+load_dotenv()
 JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
-db = App.get_instance().db
 
 
 class UserData(db.Model):
@@ -59,7 +59,7 @@ class UserData(db.Model):
             }
             return jwt.encode(
                 payload,
-                app.config.get(JWT_KEY),
+                os.getenv(JWT_KEY),
                 algorithm='HS256'
             )
         except Exception as e:
@@ -70,7 +70,7 @@ class UserData(db.Model):
         try:
             payload = jwt.decode(
                 auth_token,
-                app.config.get(JWT_KEY),
+                os.getenv(JWT_KEY),
                 algorithms=['HS256']
             )
             return payload['id']
