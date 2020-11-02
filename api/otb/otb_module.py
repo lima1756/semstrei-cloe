@@ -3,25 +3,62 @@ from otb.super_vector import SuperVector, Header, Dimension
 from copy import deepcopy
 
 
-def insert_dimension_to_shape(old_shape, index, dimension_shape):
-    """Dada una tupla (shape) inserta un escalar en la tupla, para definir una nueva shape"""
-    if type(index) is not int:
-        return None
-    if index > len(old_shape):  # If index is larger add last
-        return old_shape + (dimension_shape,)
-    if index < 0:  # If index is neg add first
-        return (dimension_shape,) + old_shape
-    return old_shape[:index] + (dimension_shape,) + old_shape[index:]
-
-
-# TODO TOTEST TODOC
 def get_vector_con_moda_basico(sv, sv_rate_control_moda_basico):
-    """ (U,C) -- ( T, U,S, M) => ( T, U,S, C, M)
-    control_shape = sv_rate_control_moda_basico.get_date().shape
-    old_shape = sv.get_data().shape
-    new_shape = insert_dimension_to_shape(old_shape, 3, control_shape[-1])
-    # . . ."""
-    pass
+    """ Dado un supervector SV1(A, B, ... U, . . .,C,D . . .) y el supervector sv_rate_control_moda_basico( U, ... ,  Z)
+    se añade la dimension Z al vector SV1, uniendo ambos supervectores segun la dimension U.
+    Los datos, se multiplican, filtrandose por la dimension U.
+    Para Los supervectores de target ventas y devoluciones:
+
+     ( T, U,S, M) , (U,C) => ( T, U,S, M, C)"""
+
+    # Get Dimension in common:
+    index_join_dimension_on_sv = sv.get_index_dimension(sv_rate_control_moda_basico.get_header().get_dimensions()[0])
+    if index_join_dimension_on_sv is None:
+        raise Exception("Vectors doesn't share common dimension for joining.")
+
+    # Get Old Shapes
+    control_shape = sv_rate_control_moda_basico.get_data().shape
+    data_old_shape = sv.get_data().shape
+
+    # Get new header with new dimension
+    new_header = deepcopy(sv.get_header())
+    new_header.insert_dimension(len(data_old_shape), sv_rate_control_moda_basico.get_header().get_dimensions()[-1])
+
+    # Get new data with Category dimension
+    new_data = np.zeros(data_old_shape + (control_shape[-1],))
+
+    reshape_control_for_mult = (1,) * len(data_old_shape)
+    reshape_control_for_mult = reshape_control_for_mult[:index_join_dimension_on_sv] + (control_shape[0],) \
+        + reshape_control_for_mult[index_join_dimension_on_sv+1:] + (control_shape[1],)
+
+    control = sv_rate_control_moda_basico.get_data().reshape(reshape_control_for_mult)
+    new_data += sv.get_data().reshape(data_old_shape + (1,)) * control
+
+    return SuperVector(new_header, new_data)
+
+
+def insert_time_dimension(sv, time_dimension, new_header_name=None):
+    """Dado un supervector, añade la dimension T como primera dimension.
+        (U,S,C,M) --> (T,U,S,C,M)
+        Los datos originales quedan en T=0
+        Las demas capas de T donde T!=0, los datos=0
+    """
+
+    # Adding to header Time (T) dimension to SuperVector. (U,S,C,M) --> (T,U,S,C,M)
+    sv_por_periodo_header = deepcopy(sv.get_header())
+    sv_por_periodo_header.insert_dimension(0, time_dimension)
+    if new_header_name is not None:
+        sv_por_periodo_header.set_vector_name(new_header_name)
+
+    # Getting new shape with dimension time added
+    new_shape = (len(time_dimension.get_categories()),) + sv.get_data().shape
+
+    # Create new data with Time dimension added. for T=0 we have the original data
+    # For T>0, all data = 0
+    sv_por_periodo_data = np.zeros(new_shape)
+    sv_por_periodo_data[:1, ...] = sv.get_data()
+
+    return SuperVector(sv_por_periodo_header, sv_por_periodo_data)
 
 
 def get_inventario_piso_por_periodo(sv_inventario_piso, time_dimension):
@@ -30,21 +67,7 @@ def get_inventario_piso_por_periodo(sv_inventario_piso, time_dimension):
         Los datos origniales se cuardan en T=0.
         Para T>0,  la informacion permanece en zeros.
     """
-
-    # Adding to header Time (T) dimension. (U,S,C,M) --> (T,U,S,C,M)
-    inventario_piso_por_periodo_header = deepcopy(sv_inventario_piso.get_header())
-    inventario_piso_por_periodo_header.insert_dimension(0, time_dimension)
-    inventario_piso_por_periodo_header.set_vector_name("Inventario Piso por Periodo")
-
-    # Getting new shape with dimension time added
-    new_shape = insert_dimension_to_shape(sv_inventario_piso.get_data().shape, 0, len(time_dimension.get_categories()))
-
-    # Create new data with Time dimension added. for T=0 we have the original data
-    # For T>0, all data = 0
-    inventario_piso_por_periodo_data = np.zeros(new_shape)
-    inventario_piso_por_periodo_data[:1, :, :] = sv_inventario_piso.get_data()
-
-    return SuperVector(inventario_piso_por_periodo_header, inventario_piso_por_periodo_data)
+    return insert_time_dimension(sv_inventario_piso, time_dimension, "Inventario Piso por Periodo")
 
 
 def get_target_stock(sv_target_venta, increment_stock_factor):
@@ -98,34 +121,108 @@ def get_percentage_otb(sv_absolute_otb, sv_target_stock):
         percentage_otb_header = deepcopy(sv_absolute_otb.get_header())
         percentage_otb_header.set_vector_name("% OTB / CTB")
 
-        # Make division, avoiding 0 in denominator
+        # Make division
         percentage_otb_data = sv_absolute_otb.get_data() / sv_target_stock.get_data()
+        # convert to percentage
         percentage_otb_data *= 100
-        percentage_otb_data = np.where(percentage_otb_data == np.inf, 0, percentage_otb_data)
-        percentage_otb_data = np.where(percentage_otb_data == np.nan, 0, percentage_otb_data)
+        # Replacing all Inf and NaN values to 0
+        percentage_otb_data[percentage_otb_data == -np.inf] = 0
+        percentage_otb_data[percentage_otb_data == np.inf] = 0
+        percentage_otb_data = np.nan_to_num(percentage_otb_data)
 
         return SuperVector(percentage_otb_header, percentage_otb_data)
     else:
         raise Exception("Super Vectors differs on type.")
 
 
-# TODO TOTEST TODOC
-"""
-def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones_general,
-                  sv_plan_ventas_general, rate_control_moda_basico, time_dimension):
-    sv_devoluciones = get_vector_con_moda_basico(sv_devoluciones_general, rate_control_moda_basico)
+# TOTEST
+def get_data_projection_eom_stock_for_period(sv_stock_inicial_por_periodo, sv_inventario_piso, sv_compras,
+                                             sv_devoluciones, sv_target_venta, periodo):
+    """
+            Get Proyection EOM stock, for given Period t
+            Result: sv_stock_inicial_por_periodo +  sv_inventario_piso + sv_compras +sv_devoluciones - sv_target_venta
+            Requisites: sv_stock_inicial_por_periodo, sv_inventario_piso, sv_compras, sv_devoluciones,
+             sv_target_venta should be the same type of supervector.
+            Returns only data for EOM Stock in given period.
+        """
 
-    sv_target_venta  = get_vector_con_moda_basico(sv_plan_ventas_general, rate_control_moda_basico)
+    if sv_stock_inicial_por_periodo.is_same_type(sv_inventario_piso) and \
+            sv_stock_inicial_por_periodo.is_same_type(sv_compras) and \
+            sv_stock_inicial_por_periodo.is_same_type(sv_devoluciones) and \
+            sv_stock_inicial_por_periodo.is_same_type(sv_target_venta):
+
+        # Make Calculation for given period
+        projection_eom_stock_for_period_data = sv_stock_inicial_por_periodo.get_data()[periodo]\
+            + sv_inventario_piso.get_data()[periodo] + sv_compras.get_data()[periodo]\
+            + sv_devoluciones.get_data()[periodo] - sv_target_venta.get_data()[periodo]
+
+        return projection_eom_stock_for_period_data
+    else:
+        raise Exception("Super Vectors differs on type.")
+
+
+def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones_general,
+                  sv_plan_ventas_general, sv_rate_control_moda_basico, time_dimension):
+    """
+    calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones_general,
+                  sv_plan_ventas_general, sv_rate_control_moda_basico, time_dimension) :
+                  (sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones, sv_target_venta,
+                  sv_projection_eom_stock, sv_target_stock, sv_absolute_otb, sv_percentage_otb)
+
+    Es la funcion principal, que calcula todas las variables necesarias para el OTB.
+    Inputs:
+    sv_stock_inicial: SuperVector, Stock Inicial, (U,S,M,C)
+    sv_inventario_piso: SuperVector, Inventario Piso, (U,S,M,C)
+    sv_compras: SuperVector, Compras, (T,U,S,M,C)
+    sv_devoluciones_general: SuperVector, Devoluciones ( Moda + Basico), (T,U,S,M)
+    sv_plan_ventas_general: SuperVector, Plan_Ventas (Moda + Basico), (T,U,S,M)
+    sv_rate_control_moda_basico: SuperVector, Tabla de Control Moda Basico por Une, (U,C)
+    time_dimension: Dimension, Dimension que indica los periodos ( Presente y futuros) del OTB.
+
+    OUTPUT:
+    Tupla con super vectores con cada variable de salida para el OTB.
+                  (sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones, sv_target_venta,
+                  sv_projection_eom_stock, sv_target_stock, sv_absolute_otb, sv_percentage_otb)
+    Cada superVector de Salida tiene dimensiones (T,U,S,M,C).
+    """
+
+    # Obtencion devoluciones por Categoria (Moda/Basico) segun la tabla de control de estacionalidad.
+    sv_devoluciones = get_vector_con_moda_basico(sv_devoluciones_general, sv_rate_control_moda_basico)
+
+    # Obtencion target_venta por Categoria (Moda/Basico) segun la tabla de control de estacionalidad.
+    sv_target_venta = get_vector_con_moda_basico(sv_plan_ventas_general, sv_rate_control_moda_basico)
+
     sv_target_stock = get_target_stock(sv_target_venta, 1.5)
 
     sv_inventario_piso = get_inventario_piso_por_periodo(sv_inventario_piso, time_dimension)
 
-    ##############################################
-    sv_stock_inicial_por_periodo = []
-    sv_projection_eom_stock = get_projection_eom_stock(sv_stock_inicial_por_periodo, sv_inventario_piso,
-                                                       sv_compras, sv_devoluciones, sv_target_venta)
-    ############################################
+    # Calculo de la proyeccion eom stock, que tambien es considerada como el stock inicial del siguiente periodo.
+    ########################################################
+    t_periodos = len(time_dimension.get_categories())
 
+    # Transformar Stock Inicial from (U,S,M,C) -->  (T,U,S,M,C)
+    sv_stock_inicial = insert_time_dimension(sv_stock_inicial, time_dimension)
+    # Get new Super Vector for EOM Stock
+    eom_stock_header = deepcopy(sv_stock_inicial.get_header())
+    eom_stock_header.set_vector_name("Projection EOM STOCK")
+    sv_projection_eom_stock = SuperVector(eom_stock_header, np.zeros(sv_stock_inicial.get_data().shape))
+
+    # Calcula el EOM Stock para cada periodo.
+    for t in range(t_periodos):
+        sv_projection_eom_stock.get_data()[t, ...] += get_data_projection_eom_stock_for_period(sv_stock_inicial,
+                                                                                               sv_inventario_piso,
+                                                                                               sv_compras,
+                                                                                               sv_devoluciones,
+                                                                                               sv_target_venta, t)
+        if t < t_periodos - 1:
+            # El EOM presente, es el stock inicial del siguiente periodo.
+            sv_stock_inicial.get_data()[t+1, ...] += sv_projection_eom_stock.get_data()[t, ...]
+    ########################################################
+
+    # Calcula OTB
     sv_absolute_otb = get_absolute_otb(sv_projection_eom_stock, sv_target_stock)
     sv_percentage_otb = get_percentage_otb(sv_absolute_otb, sv_target_stock)
-"""
+
+    return (sv_stock_inicial, sv_inventario_piso, sv_compras,
+            sv_devoluciones, sv_target_venta, sv_projection_eom_stock,
+            sv_target_stock, sv_absolute_otb, sv_percentage_otb)

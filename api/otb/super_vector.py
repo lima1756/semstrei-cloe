@@ -19,6 +19,12 @@ class Dimension:
         self._dimension_name = name
         self._categories = categories
 
+    def __repr__(self):
+        return self._dimension_name
+
+    def __str__(self):
+        return self._dimension_name
+
     def add_category(self, category):
         self._categories.append(category)
 
@@ -100,6 +106,12 @@ class Header:
         self._dimensions = dimensions
         self._vector_name = name
 
+    def __repr__(self):
+        return self._vector_name
+
+    def __str__(self):
+        return self._vector_name
+
     def add_dimension_last(self, dimension):
         self._dimensions.append(dimension)
 
@@ -123,14 +135,20 @@ class Header:
     def set_vector_name(self, vector_name):
         self._vector_name = vector_name
 
-    def get_index_dimension(self, dimension_name):
+    def get_index_dimension_by_name(self, dimension_name):
         for i in range(len(self._dimensions)):
             if dimension_name == self._dimensions[i].get_name():
                 return i
         return None
 
+    def get_index_dimension(self, dimension):
+        for i in range(len(self._dimensions)):
+            if dimension == self._dimensions[i]:
+                return i
+        return None
+
     def get_index_category(self, dimension_name, category_name):
-        idx_dim = self.get_index_dimension(dimension_name)
+        idx_dim = self.get_index_dimension_by_name(dimension_name)
         if idx_dim is None:
             return None
         return [idx_dim, self._dimensions[idx_dim].get_index_category(category_name)]
@@ -212,8 +230,11 @@ class SuperVector:
     def is_same_type(self, other):
         return self.get_header() == other.get_header()
 
-    def get_index_dimension(self, dimension_name):
-        return self._header.get_index_dimension(dimension_name)
+    def get_index_dimension(self, dimension):
+        return self._header.get_index_dimension(dimension)
+
+    def get_index_dimension_by_name(self, dimension_name):
+        return self._header.get_index_dimension_by_name(dimension_name)
 
     def get_index_category(self, dimension_name, category_name):
         return self._header.get_index_category(dimension_name, category_name)

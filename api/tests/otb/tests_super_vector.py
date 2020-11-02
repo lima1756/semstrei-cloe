@@ -106,9 +106,14 @@ class TestSuperVector(unittest.TestCase):
         self.assertTrue(self._super_vector_1.is_same_type(self._super_vector_2))
 
     def test_get_dimension_from_header(self):
-        self.assertEqual(self._super_vector_1.get_index_dimension("WarnerBrothers"), 0)
-        self.assertEqual(self._super_vector_1.get_index_dimension("Colors"), 1)
-        self.assertEqual(self._super_vector_1.get_index_dimension("Sabores"), None)
+        self.assertEqual(self._super_vector_1.get_index_dimension(self._dimension_11), 0)
+        self.assertEqual(self._super_vector_1.get_index_dimension(self._dimension_12), 1)
+        self.assertEqual(self._super_vector_1.get_index_dimension(Dimension("Seasons", [])), None)
+
+    def test_get_dimension_by_name_from_header(self):
+        self.assertEqual(self._super_vector_1.get_index_dimension_by_name("WarnerBrothers"), 0)
+        self.assertEqual(self._super_vector_1.get_index_dimension_by_name("Colors"), 1)
+        self.assertEqual(self._super_vector_1.get_index_dimension_by_name("Sabores"), None)
 
     def test_get_shape_from_super_vector(self):
         self.assertEqual(self._super_vector_1.get_shape_categories(["Dot", "Blue"]), (2, 1))
