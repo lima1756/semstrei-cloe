@@ -3,9 +3,10 @@ from app.libs.otb.super_vector import Dimension, SuperVector, Header
 import numpy.testing as npt
 import numpy as np
 from copy import deepcopy
+from ...base_test_app import BaseTestApp
 
 
-class TestSuperVector(unittest.TestCase):
+class TestSuperVector(BaseTestApp):
 
     def setUp(self):
         self._dimension_11 = Dimension(
@@ -31,6 +32,9 @@ class TestSuperVector(unittest.TestCase):
             self._header_1, np.arange(12).reshape(3, 4))
         self._super_vector_2 = SuperVector(
             self._header_2, np.arange(12, 24).reshape(3, 4))
+
+    def tearDown(self):
+        pass  # doesn't use any of the app set up
 
     def test_get_dimension_name(self):
         self.assertEqual(self._dimension_13.get_name(), "Fruits")

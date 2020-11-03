@@ -1,5 +1,5 @@
 import numpy as np
-from .super_vector import SuperVector, Header, Dimension
+from app.libs.otb.super_vector import SuperVector, Header, Dimension
 from copy import deepcopy
 
 
@@ -148,16 +148,18 @@ def get_percentage_otb(sv_absolute_otb, sv_target_stock):
         percentage_otb_header = deepcopy(sv_absolute_otb.get_header())
         percentage_otb_header.set_vector_name("% OTB / CTB")
 
-        # Make division
-        percentage_otb_data = sv_absolute_otb.get_data() / sv_target_stock.get_data()
-        # convert to percentage
-        percentage_otb_data *= 100
-        # Replacing all Inf and NaN values to 0
-        percentage_otb_data[percentage_otb_data == -np.inf] = 0
-        percentage_otb_data[percentage_otb_data == np.inf] = 0
-        percentage_otb_data = np.nan_to_num(percentage_otb_data)
+        # Ignoring divsion by zero warning, handled manually
+        with np.errstate(divide='ignore', invalid='ignore'):
+            # Make division
+            percentage_otb_data = sv_absolute_otb.get_data() / sv_target_stock.get_data()
+            # convert to percentage
+            percentage_otb_data *= 100
+            # Replacing all Inf and NaN values to 0
+            percentage_otb_data[percentage_otb_data == -np.inf] = 0
+            percentage_otb_data[percentage_otb_data == np.inf] = 0
+            percentage_otb_data = np.nan_to_num(percentage_otb_data)
 
-        return SuperVector(percentage_otb_header, percentage_otb_data)
+            return SuperVector(percentage_otb_header, percentage_otb_data)
     else:
         raise Exception("Super Vectors differs on type.")
 
