@@ -1,5 +1,5 @@
 import numpy as np
-from otb.super_vector import SuperVector, Header, Dimension
+from .super_vector import SuperVector, Header, Dimension
 from copy import deepcopy
 
 
@@ -16,8 +16,10 @@ def join_super_vector_with_category(sv, sv_rate_control_category):
     """
 
     # Get Dimension in common from both SuperVectors:
-    index_join_dimension_1_on_sv = sv.get_index_dimension(sv_rate_control_category.get_dimensions()[0])
-    index_join_dimension_2_on_sv = sv.get_index_dimension(sv_rate_control_category.get_dimensions()[1])
+    index_join_dimension_1_on_sv = sv.get_index_dimension(
+        sv_rate_control_category.get_dimensions()[0])
+    index_join_dimension_2_on_sv = sv.get_index_dimension(
+        sv_rate_control_category.get_dimensions()[1])
     if index_join_dimension_1_on_sv is None or index_join_dimension_2_on_sv is None:
         raise Exception("Vectors doesn't share common Dimension for joining.")
 
@@ -27,7 +29,8 @@ def join_super_vector_with_category(sv, sv_rate_control_category):
 
     # Get new header with new dimension
     new_header = deepcopy(sv.get_header())
-    new_header.insert_dimension(len(data_old_shape), sv_rate_control_category.get_dimensions()[-1])
+    new_header.insert_dimension(
+        len(data_old_shape), sv_rate_control_category.get_dimensions()[-1])
 
     # Get new data with Category dimension
     new_data = np.zeros(data_old_shape + (control_shape[-1],))
@@ -41,7 +44,8 @@ def join_super_vector_with_category(sv, sv_rate_control_category):
     reshape_control_for_multiplication = reshape_control_for_multiplication[:index_join_dimension_2_on_sv] \
         + (control_shape[1],) \
         + reshape_control_for_multiplication[index_join_dimension_2_on_sv + 1:]
-    control = sv_rate_control_category.get_data().reshape(reshape_control_for_multiplication)
+    control = sv_rate_control_category.get_data().reshape(
+        reshape_control_for_multiplication)
 
     # Make multiplication of SuperVector's data with control's reshaped data.
     new_data += sv.get_data().reshape(data_old_shape + (1,)) * control
@@ -58,7 +62,8 @@ def insert_time_dimension(sv, time_dimension, new_header_name=None):
 
     # Adding to header Time (T) dimension to SuperVector. (U,S,C,M) --> (T,U,S,C,M)
     header_with_extra_dimension = deepcopy(sv.get_header())
-    header_with_extra_dimension.insert_dimension(0, time_dimension)  # Insert first new Dimension.
+    # Insert first new Dimension.
+    header_with_extra_dimension.insert_dimension(0, time_dimension)
     if new_header_name is not None:
         header_with_extra_dimension.set_vector_name(new_header_name)
 
@@ -98,15 +103,18 @@ def get_target_stock(sv_target_venta, increment_stock_factor):
     target_stock_header = deepcopy(sv_target_venta.get_header())
     target_stock_header.set_vector_name("Target Stock")
     target_stock_data = np.zeros(shape)
-    last_period_index = len(target_stock_header.get_dimensions()[0].get_categories())
+    last_period_index = len(
+        target_stock_header.get_dimensions()[0].get_categories())
 
     # Calculate  target Stock for all periods.
 
     # Get average from present and next period
     for t in range(last_period_index - 1):
         # Calculate average this period and next one.
-        target_stock_data[t] = (sv_target_venta.get_data()[t] + sv_target_venta.get_data()[t + 1]) / 2
-    target_stock_data[last_period_index - 1] = sv_target_venta.get_data()[last_period_index - 1]
+        target_stock_data[t] = (sv_target_venta.get_data()[
+                                t] + sv_target_venta.get_data()[t + 1]) / 2
+    target_stock_data[last_period_index -
+                      1] = sv_target_venta.get_data()[last_period_index - 1]
 
     # Multiply by the increment_factor
     target_stock_data *= increment_stock_factor
@@ -172,7 +180,8 @@ def get_data_projection_eom_stock_for_period(sv_initial_stock, sv_inventario_pis
         # Make Calculation for given period
         projection_eom_stock_by_period_data = sv_initial_stock.get_data()[period]\
             + sv_inventario_piso.get_data()[period] + sv_compras.get_data()[period]\
-            + sv_devoluciones.get_data()[period] - sv_target_venta.get_data()[period]
+            + sv_devoluciones.get_data()[period] - \
+            sv_target_venta.get_data()[period]
 
         return projection_eom_stock_by_period_data
     else:
@@ -206,14 +215,17 @@ def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devolucio
     """
 
     # Get devolution by category ( Basico / Moda ) given the control table by season.
-    sv_devoluciones = join_super_vector_with_category(sv_devoluciones_general, sv_rate_control_moda_basico)
+    sv_devoluciones = join_super_vector_with_category(
+        sv_devoluciones_general, sv_rate_control_moda_basico)
 
     # Get target_venta by category (Moda/Basico) given the control table by season.
-    sv_target_venta = join_super_vector_with_category(sv_plan_ventas_general, sv_rate_control_moda_basico)
+    sv_target_venta = join_super_vector_with_category(
+        sv_plan_ventas_general, sv_rate_control_moda_basico)
 
     sv_target_stock = get_target_stock(sv_target_venta, 1.5)
 
-    sv_inventario_piso = get_inventario_piso_por_periodo(sv_inventario_piso, time_dimension)
+    sv_inventario_piso = get_inventario_piso_por_periodo(
+        sv_inventario_piso, time_dimension)
 
     # Calculation of Target EOM Stock, which is also the next period Initial stock.
     ########################################################
@@ -224,7 +236,8 @@ def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devolucio
     # Get new Super Vector for EOM Stock
     eom_stock_header = deepcopy(sv_stock_inicial.get_header())
     eom_stock_header.set_vector_name("Projection EOM STOCK")
-    sv_projection_eom_stock = SuperVector(eom_stock_header, np.zeros(sv_stock_inicial.get_data().shape))
+    sv_projection_eom_stock = SuperVector(
+        eom_stock_header, np.zeros(sv_stock_inicial.get_data().shape))
 
     # Calculate Target EOM Stock for each period.
     for t in range(t_period):
@@ -235,11 +248,13 @@ def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devolucio
                                                                                                sv_target_venta, t)
         if t < t_period - 1:
             # The present Target EOM Stock, is the initial stock for the next period.
-            sv_stock_inicial.get_data()[t+1, ...] += sv_projection_eom_stock.get_data()[t, ...]
+            sv_stock_inicial.get_data(
+            )[t+1, ...] += sv_projection_eom_stock.get_data()[t, ...]
     ########################################################
 
     # Calculate OTB
-    sv_absolute_otb = get_absolute_otb(sv_projection_eom_stock, sv_target_stock)
+    sv_absolute_otb = get_absolute_otb(
+        sv_projection_eom_stock, sv_target_stock)
     sv_percentage_otb = get_percentage_otb(sv_absolute_otb, sv_target_stock)
 
     return (sv_stock_inicial, sv_inventario_piso, sv_compras,
