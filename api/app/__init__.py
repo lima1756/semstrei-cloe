@@ -1,5 +1,6 @@
 import os
 import logging
+import numpy
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
@@ -30,6 +31,9 @@ class App:
             self.db.init_app(self.app)
             self.migrate.init_app(self.app, self.db)
             self.mail.init_app(self.app)
+
+            # configuring numpy
+            numpy.seterr(all='warn')
 
             # configuring mail logger
             self.app.extensions['mail'].debug = 0
