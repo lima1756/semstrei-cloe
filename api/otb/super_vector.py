@@ -241,3 +241,7 @@ class SuperVector:
 
     def get_shape_categories(self, categories_each_dimension):
         return self._header.get_shape_categories(categories_each_dimension)
+
+    # TOTEST
+    def get_dimensions(self):
+        return self._header.get_dimensions()
