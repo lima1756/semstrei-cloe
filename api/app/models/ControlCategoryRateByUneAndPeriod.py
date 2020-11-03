@@ -9,7 +9,7 @@ app = App.get_instance().app
 db = App.get_instance().db
 
 
-class OtbResults(db.Model):
+class ControlCategoryRateByUneAndPeriod(db.Model):
     _id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     month = db.Column(db.String(128), nullable=False)
