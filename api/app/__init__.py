@@ -10,7 +10,8 @@ from .libs.extentions import mail
 # rutas
 from .routes import user_blueprint, password_recovery_blueprint, auth_blueprint
 # modelos
-import app.models
+from app.models import BlacklistToken, ControlCategoryRateByUneAndPeriod,\
+    OtbResults, RecoveryTokens, RelationClientMercado, Role, UserData
 
 
 class App:

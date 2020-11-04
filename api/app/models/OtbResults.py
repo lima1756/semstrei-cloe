@@ -1,23 +1,17 @@
-import jwt
-import datetime
-from app import App
-from werkzeug.security import generate_password_hash, check_password_hash
-
-JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
-db = App.get_instance().db
+from app.libs import db
 
 
 class OtbResults(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     numberCurrentPeriodOTB = db.Column(db.Integer, nullable=False, default=-1)
-    daysLongCurrentPeriodOTB = db.Column(db.Integer, nullable=False, default=-1)
+    daysLongCurrentPeriodOTB = db.Column(
+        db.Integer, nullable=False, default=-1)
     startDateCurrentPeriodOTB = db.Column(db.DateTime, nullable=False)
 
     isFutureProjection = db.Column(db.Boolean, nullable=False, default=False)
-    daysLongProjectionPeriodOTB = db.Column(db.Integer, nullable=False, default=-1)
+    daysLongProjectionPeriodOTB = db.Column(
+        db.Integer, nullable=False, default=-1)
     startDateProjectionPeriodOTB = db.Column(db.DateTime, nullable=True)
 
     une = db.Column(db.String(128), nullable=False)
@@ -25,15 +19,15 @@ class OtbResults(db.Model):
     categoria = db.Column(db.String(128), nullable=False)
     mercado = db.Column(db.String(128), nullable=False)
 
-    initialStock = db.Column(db.Double, nullable=False, default=0.0)
-    inventoryOnStores = db.Column(db.Double, nullable=False, default=0.0)
-    purchases = db.Column(db.Double, nullable=False, default=0.0)
-    devolution = db.Column(db.Double, nullable=False, default=0.0)
-    targetSells = db.Column(db.Double, nullable=False, default=0.0)
-    targetStock = db.Column(db.Double, nullable=False, default=0.0)
-    projectionEomStock = db.Column(db.Double, nullable=False, default=0.0)
-    otb_minus_ctb = db.Column(db.Double, nullable=False, default=0.0)
-    percentage_otb = db.Column(db.Double, nullable=False, default=0.0)
+    initialStock = db.Column(db.Numeric(), nullable=False, default=0.0)
+    inventoryOnStores = db.Column(db.Numeric(), nullable=False, default=0.0)
+    purchases = db.Column(db.Numeric(), nullable=False, default=0.0)
+    devolution = db.Column(db.Numeric(), nullable=False, default=0.0)
+    targetSells = db.Column(db.Numeric(), nullable=False, default=0.0)
+    targetStock = db.Column(db.Numeric(), nullable=False, default=0.0)
+    projectionEomStock = db.Column(db.Numeric(), nullable=False, default=0.0)
+    otb_minus_ctb = db.Column(db.Numeric(), nullable=False, default=0.0)
+    percentage_otb = db.Column(db.Numeric(), nullable=False, default=0.0)
 
     def __init__(self, numberCurrentPeriodOTB, daysLongCurrentPeriodOTB, startDateCurrentPeriodOTB,
                  isFutureProjection, daysLongProjectionPeriodOTB, startDateProjectionPeriodOTB,

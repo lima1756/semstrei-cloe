@@ -1,12 +1,4 @@
-import jwt
-import datetime
-from app import App
-from werkzeug.security import generate_password_hash, check_password_hash
-
-JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
-db = App.get_instance().db
+from app.libs import db
 
 
 class RelationClientMercado(db.Model):

@@ -1,12 +1,4 @@
-import jwt
-import datetime
-from app import App
-from werkzeug.security import generate_password_hash, check_password_hash
-
-JWT_KEY = 'JWT_KEY'
-
-app = App.get_instance().app
-db = App.get_instance().db
+from app.libs import db
 
 
 class ControlCategoryRateByUneAndPeriod(db.Model):
@@ -14,7 +6,7 @@ class ControlCategoryRateByUneAndPeriod(db.Model):
 
     month = db.Column(db.String(128), nullable=False)
     une = db.Column(db.String(128), nullable=False)
-    rate_category_moda = db.Column(db.Double, nullable=False, default=0.0)
+    rate_category_moda = db.Column(db.Numeric(), nullable=False, default=0.0)
     date = db.Column(db.Date, nullable=False)
 
     def __init__(self, month, une, rate_category_moda, date):
@@ -24,7 +16,8 @@ class ControlCategoryRateByUneAndPeriod(db.Model):
         if 0 <= rate_category_moda <= 1:
             self.rate_category_moda = rate_category_moda
         else:
-            raise Exeption("Rate Category Moda must be a value from 0 to 1 inclusive.")
+            raise Exeption(
+                "Rate Category Moda must be a value from 0 to 1 inclusive.")
 
     def __repr__(self):
         return '<Rate of Category: "moda" items to buy given the {} and une: {}>'.format(self.month, self.une)
