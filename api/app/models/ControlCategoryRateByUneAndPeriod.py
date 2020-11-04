@@ -2,7 +2,7 @@ from app.libs import db
 
 
 class ControlCategoryRateByUneAndPeriod(db.Model):
-    _id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     month = db.Column(db.String(128), nullable=False)
     une = db.Column(db.String(128), nullable=False)
@@ -16,7 +16,7 @@ class ControlCategoryRateByUneAndPeriod(db.Model):
         if 0 <= rate_category_moda <= 1:
             self.rate_category_moda = rate_category_moda
         else:
-            raise Exeption(
+            raise Exception(
                 "Rate Category Moda must be a value from 0 to 1 inclusive.")
 
     def __repr__(self):

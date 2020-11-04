@@ -2,7 +2,7 @@ from app.libs import db
 
 
 class RelationClientMercado(db.Model):
-    _id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     client = db.Column(db.String(128), nullable=False)
     isM1 = db.Column(db.Boolean, nullable=False, default=True)

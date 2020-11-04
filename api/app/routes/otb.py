@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response, jsonify, render_template
 
-password_recovery_blueprint = Blueprint('passsword_recovery', __name__)
+otb = Blueprint('otb', __name__)
 
 
 class OTB(MethodView):
@@ -8,4 +8,4 @@ class OTB(MethodView):
         pass
 
 
-otb = OTB.as_view('otb')
+otb_view = OTB.as_view('otb')
