@@ -2,13 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link, } from 'react-router-dom';
 import {
-  AppBar, Avatar, Box, CssBaseline, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography
+  AppBar, Avatar, Box, Collapse, CssBaseline, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography
 } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { isopen } from '../../../redux/actions';
 import EqualizerRoundedIcon from '@material-ui/icons/EqualizerRounded';
 import GroupRoundedIcon from '@material-ui/icons/GroupRounded';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import Bar from './AppBar';
+import DashboardRoundedIcon from '@material-ui/icons/DashboardRounded';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import TableChartRoundedIcon from '@material-ui/icons/TableChartRounded';
 
 const drawerWidth = 240;
 
@@ -44,20 +49,35 @@ const useStyles = makeStyles((theme) => ({
   topPad: {
     paddingTop: theme.spacing(2),
   },
+  nested: {
+    paddingLeft: theme.spacing(4),
+  },
 }));
 
 export default function ClippedDrawer() {
   const classes = useStyles();
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const user = useSelector(state => state.user);
+  const openDrawer = useSelector(state => state.openDrawer);
+  const [open, setOpen] = useState(true);
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    setOpen(!open);
+    dispatch(isopen(!openDrawer.menuDrawer));
+  };
 
   useEffect(() => {
-    if (window.location.pathname === '/dashboard') {
+    if (window.location.pathname === '/dashboard/resultTables') {
       setSelectedIndex(0);
     } else if (window.location.pathname === '/users') {
       setSelectedIndex(1);
-    } else {
+    } else if(window.location.pathname === '/account') {
       setSelectedIndex(2);
+    }else if(window.location.pathname === '/dashboard/graphs'){
+      setSelectedIndex(3);
+    }else if(window.location.pathname === '/dashboard/controlTables'){
+      setSelectedIndex(4);
     }
   }, []);
 
@@ -82,17 +102,52 @@ export default function ClippedDrawer() {
           </Box>
           <Divider variant='middle' />
           <List component="nav" aria-label="main mailbox folders">
-            <ListItem
-              button
-              selected={selectedIndex === 0}
-              component={Link}
-              to={'/dashboard'}
-            >
+            <ListItem 
+            button 
+            onClick={handleClick}>
               <ListItemIcon>
-                <EqualizerRoundedIcon />
+                <DashboardRoundedIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
+              {openDrawer.menuDrawer ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
+            <Collapse in={openDrawer.menuDrawer} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <ListItem 
+                button 
+                className={classes.nested}
+                selected={selectedIndex === 0}
+                component={Link}
+                to={'/dashboard/resultTables'}>
+                  <ListItemIcon>
+                    <TableChartRoundedIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Tbls. de resultado" />
+                </ListItem>
+                <ListItem 
+                button 
+                className={classes.nested}
+                selected={selectedIndex === 3}
+                component={Link}
+                to={'/dashboard/graphs'}>
+                  <ListItemIcon>
+                    <EqualizerRoundedIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Graficas" />
+                </ListItem>
+                <ListItem 
+                button 
+                className={classes.nested}
+                selected={selectedIndex === 4}
+                component={Link}
+                to={'/dashboard/controlTables'}>
+                  <ListItemIcon>
+                    <TableChartRoundedIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Tbls. de control" />
+                </ListItem>
+              </List>
+            </Collapse>
             {
               user.admin ?
                 <ListItem

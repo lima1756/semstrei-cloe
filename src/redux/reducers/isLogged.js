@@ -11,5 +11,4 @@ const loggedReducer = (state = IS_LOGGED , action ) => {
     }
 }
 
-
 export default loggedReducer;
