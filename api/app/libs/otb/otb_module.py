@@ -108,15 +108,15 @@ def get_target_stock(sv_target_venta, increment_stock_factor):
 
     # Calculate  target Stock for all periods.
 
-    # Get average from present and next period
+    #   Get average from present and next period
     for t in range(last_period_index - 1):
-        # Calculate average this period and next one.
+        #   Calculate average this period and next one.
         target_stock_data[t] = (sv_target_venta.get_data()[
                                 t] + sv_target_venta.get_data()[t + 1]) / 2
     target_stock_data[last_period_index -
                       1] = sv_target_venta.get_data()[last_period_index - 1]
 
-    # Multiply by the increment_factor
+    #   Multiply by the increment_factor
     target_stock_data *= increment_stock_factor
 
     return SuperVector(target_stock_header, target_stock_data)
@@ -130,7 +130,7 @@ def get_absolute_otb(sv_projection_eom_stock, sv_target_stock):
     if sv_projection_eom_stock.is_same_type(sv_target_stock):
         absolute_otb_header = deepcopy(sv_projection_eom_stock.get_header())
         absolute_otb_header.set_vector_name("OTB / CTB")
-        absolute_otb_data = sv_projection_eom_stock.get_data() - sv_target_stock.get_data()
+        absolute_otb_data = sv_target_stock.get_data() - sv_projection_eom_stock.get_data()
         return SuperVector(absolute_otb_header, absolute_otb_data)
     else:
         raise Exception("Super Vectors differs on type.")
@@ -182,8 +182,7 @@ def get_data_projection_eom_stock_for_period(sv_initial_stock, sv_inventario_pis
         # Make Calculation for given period
         projection_eom_stock_by_period_data = sv_initial_stock.get_data()[period]\
             + sv_inventario_piso.get_data()[period] + sv_compras.get_data()[period]\
-            + sv_devoluciones.get_data()[period] - \
-            sv_target_venta.get_data()[period]
+            + sv_devoluciones.get_data()[period] - sv_target_venta.get_data()[period]
 
         return projection_eom_stock_by_period_data
     else:
