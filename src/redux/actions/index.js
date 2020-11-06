@@ -7,7 +7,7 @@ export const userinformation = (admin, newUser, name, mail, phone, role, userId)
         mail: mail,
         phone: phone,
         role: role,
-        userId: userId
+        userId: userId,
     }
 }
 
@@ -16,5 +16,12 @@ export const signin = (logged, token) => {
         type: 'SIGNIN',
         logged: logged,
         token: token,
+    }
+}
+
+export const isopen = (menuDrawer) => {
+    return{
+        type: 'ISOPEN',
+        menuDrawer: menuDrawer,
     }
 }

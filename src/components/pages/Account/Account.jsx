@@ -65,7 +65,7 @@ export default function MediaControlCard() {
   }, []);
 
   const updateInfo = (name, mail, phone) => {
-    axios.put(`https://150.136.172.48/api/user/${user.userId}`, {
+    axios.put(`https://150.136.172.48/api/user`, {
       email: mail === '' ? null : mail,
       name: name === '' ? null : name,
       phone_number: phone === '' ? null : phone

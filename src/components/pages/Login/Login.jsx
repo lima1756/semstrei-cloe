@@ -48,7 +48,7 @@ export default function Login() {
             let status = response.data.status === 'success' ? true : false;
             dispatch(signin(status, response.data.auth_token));
             dispatch(userinformation(response.data.user.admin,response.data.user.new_user,response.data.user.name,response.data.user.email,response.data.user.phone_number,response.data.user.role,response.data.user.user_id));
-            history.push('/dashboard');
+            history.push('/dashboard/resultTables');
         }).catch(function (error) {
             handleErrorLogin('error');
         })
@@ -69,6 +69,7 @@ export default function Login() {
 
     const handleLogin = () => {
         login(document.getElementById("userEmail").value, document.getElementById("password").value, state.checkedG);
+        //history.push('/dashboard');
     };
 
     // ---------------------- Snackbar login success------------------------------
