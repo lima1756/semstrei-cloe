@@ -4,12 +4,21 @@ from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
 
-otb_filters_blueprint = Blueprint('otb', __name__)
+otb_filters_blueprint = Blueprint('otb_filters', __name__)
 
 
 class Filter(MethodView):
+
+    filters = {
+        'categoria': OtbResults.categoria,
+        'une': OtbResults.une,
+        'mercado': OtbResults.mercado,
+        'submarca': OtbResults.submarca,
+    }
+
     def get_by_filter(self, filter):
-        res_query = db.session.query(filter).group_by(filter).all()
+        res_query = db.session.query(
+            self.filters[filter]).group_by(filter).all()
         filter_data = []
         for row in res_query:
             filter_data.append(row[0])
@@ -18,7 +27,7 @@ class Filter(MethodView):
     def get(self):
         responseObject = {
             'status': 'success',
-            'data': {
+            'filters': {
                 'categoria': self.get_by_filter('categoria'),
                 'une': self.get_by_filter('une'),
                 'mercado': self.get_by_filter('mercado'),
