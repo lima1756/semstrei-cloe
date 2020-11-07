@@ -1,5 +1,6 @@
 from flask import Blueprint, request, make_response, render_template
 from flask.views import MethodView
+from sqlalchemy import asc
 from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
@@ -56,15 +57,10 @@ class OTB(MethodView):
         # TODO: remove this
         return self.gen_fake_data()
 
-    def get(self):
-        categoria = request.args.get('categoria')
-        une = request.args.get('une')
-        submarca = request.args.get('submarca')
-        mercado = request.args.get('mercado')
-        current_period = request.args.get('current_period')
+    def get_table(self, categoria, submarca, une, mercado, current_period, breakdown=False):
 
         # SELECT columns
-        query = db.session.query(
+        select = [
             OtbResults.startDateCurrentPeriodOTB,
             OtbResults.startDateProjectionPeriodOTB,
             func.sum(OtbResults.initialStock).label('initialStock'),
@@ -77,7 +73,8 @@ class OTB(MethodView):
                 'projectionEomStock'),
             func.sum(OtbResults.otb_minus_ctb).label('otb_minus_ctb'),
             func.sum(OtbResults.percentage_otb).label('percentage_otb'),
-        )
+        ]
+
         # WHERE
         filters = [
             # OtbResults.isFutureProjection == False,
@@ -93,10 +90,39 @@ class OTB(MethodView):
             filters.append(OtbResults.mercado == mercado)
 
         # GROUP BY
-        group_by = [OtbResults.startDateProjectionPeriodOTB,
-                    OtbResults.startDateCurrentPeriodOTB]
+        group_by = [
+            OtbResults.startDateProjectionPeriodOTB,
+            OtbResults.startDateCurrentPeriodOTB
+        ]
 
-        res_query = query.filter(*filters).group_by(*group_by).all()
+        # ORDER BY
+        order_by = []
+
+        if breakdown:
+            select.extend(
+                [OtbResults.categoria,
+                 OtbResults.submarca,
+                 OtbResults.une,
+                 OtbResults.mercado]
+            )
+            group_by.extend(
+                [OtbResults.categoria,
+                 OtbResults.submarca,
+                 OtbResults.une,
+                 OtbResults.mercado]
+            )
+            order_by.extend(
+                [OtbResults.categoria,
+                 OtbResults.submarca,
+                 OtbResults.une,
+                 OtbResults.mercado]
+            )
+
+        order_by.append(asc(OtbResults.startDateProjectionPeriodOTB))
+
+        res_query = db.session.query(*select)\
+            .filter(*filters).group_by(*group_by)\
+            .order_by(*order_by).all()
         response = []
         for row in res_query:
             response.append({
@@ -111,10 +137,45 @@ class OTB(MethodView):
                 "projectionEomStock": row[8],
                 "otb_minus_ctb": row[9],
                 "percentage_otb": row[10],
+                "categoria": row[11] if len(row) > 11 else categoria,
+                "submarca": row[12] if len(row) > 12 else submarca,
+                "une": row[13] if len(row) > 13 else une,
+                "mercado": row[14] if len(row) > 14 else mercado,
             })
+        return response
+
+    def get(self):
+        categoria = request.args.get('categoria')
+        une = request.args.get('une')
+        submarca = request.args.get('submarca')
+        mercado = request.args.get('mercado')
+        current_period = request.args.get('current_period')
+        breakdown = request.args.get('breakdown') == 'True'
+        table = self.get_table(categoria, submarca, une,
+                               mercado, current_period)
+        breakdown_tables = None
+        if breakdown:
+            breakdown_tables = []
+            curr_table = -1
+            breakdown_res = self.get_table(categoria, submarca, une,
+                                           mercado, current_period, True)
+            for i in range(len(breakdown_res)):
+                if i != 0:
+                    last = breakdown_res[i-1]
+                    curr = breakdown_res[i]
+                    if not (last['categoria'] == curr['categoria'] and last['submarca'] == curr['submarca'] and last['une'] == curr['une'] and last['mercado'] == curr['mercado']):
+                        curr_table += 1
+                        breakdown_tables.append([])
+                    breakdown_tables[curr_table].append(breakdown_res[i])
+                else:
+                    curr_table = 0
+                    breakdown_tables.append([])
+                    breakdown_tables[curr_table].append(breakdown_res[i])
+
         responseObject = {
             'status': 'success',
-            'data': response
+            'table': table,
+            'breakdown': breakdown_tables
         }
         return make_response(simplejson.dumps(responseObject)), 200
 
