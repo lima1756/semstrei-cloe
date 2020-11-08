@@ -1,7 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 from .libs.extentions import db
 from .libs.extentions import migrate
@@ -45,6 +45,16 @@ class App:
                 format=self.app.config.get('LOGGING_FORMAT'),
                 filename=logging_dir + logging_file if logging_file else None
             )
+
+            # Handle all unexpected errors:
+            @self.app.errorhandler(Exception)
+            def handle_error(e):
+                logging.error(e)
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Some error occurred. Please try again.'
+                }
+                return make_response(jsonify(responseObject)), 500
 
             # Registrando rutas
             url_prefix = '/api'

@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, make_response, render_template
 from flask.views import MethodView
 from app.models import ControlCategoryRateByUneAndPeriod, RelationClientMercado
 from app.libs import db
+from app.libs.decorators import login_required
 
 otb_control_tables_blueprint = Blueprint('otb_control_tables', __name__)
 
@@ -12,10 +13,10 @@ class ControlTables(MethodView):
     def construct_object(self, data):
         pass
 
-    def update_object(self, id, data):
+    def update_object(self, obj, data):
         pass
 
-    def get_object(self, data):
+    def get_object(self, id):
         pass
 
     def get_all(self):
@@ -59,6 +60,7 @@ class ControlTables(MethodView):
             }
             return make_response(jsonify(responseObject)), 500
 
+    @login_required
     def post(self, id):
         data = request.get_json()
         obj = self.construct_object(data)
@@ -69,26 +71,43 @@ class ControlTables(MethodView):
         }
         return make_response(jsonify(responseObject)), 201
 
+    @login_required
     def put(self, id):
         data = request.get_json()
-        obj = self.update_object(id, data)
-        db.session.add(obj)
-        db.session.commit()
-        responseObject = {
-            'status': 'success'
-        }
-        return make_response(jsonify(responseObject)), 200
+        obj = self.get_object(id)
+        if obj is not None:
+            obj = self.update_object(obj, data)
+            db.session.add(obj)
+            db.session.commit()
+            responseObject = {
+                'status': 'success'
+            }
+            return make_response(jsonify(responseObject)), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'object not found'
+            }
+            return make_response(jsonify(responseObject)), 404
 
+    @login_required
     def get(self, id):
         if id == 'all':
             return self.get_all_users()
         else:
             obj = self.get_object(id)
-            responseObject = {
-                'status': 'success',
-                'data': self.construct_json(obj)
-            }
-            return make_response(jsonify(responseObject)), 200
+            if obj is not None:
+                responseObject = {
+                    'status': 'success',
+                    'data': self.construct_json(obj)
+                }
+                return make_response(jsonify(responseObject)), 200
+            else:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'object not found'
+                }
+                return make_response(jsonify(responseObject)), 404
 
     def delete_object(self, id):
         obj = self.get_object(id)
@@ -97,6 +116,7 @@ class ControlTables(MethodView):
         else:
             raise IndexError("user with id "+str(id)+" not found")
 
+    @login_required
     def delete(self, id):
         count = 0
         if id is None:
@@ -110,8 +130,15 @@ class ControlTables(MethodView):
                     except IndexError as e:
                         pass
         else:
-            self.delete_object(id)
-            count = 1
+            try:
+                self.delete_object(id)
+                count += 1
+            except IndexError as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'object not found'
+                }
+                return make_response(jsonify(responseObject)), 404
         db.session.commit()
         responseObject = {
             'status': 'success',
@@ -128,10 +155,9 @@ class RelationClientMercadoRoute(ControlTables):
             data.get('is_m1')
         )
 
-    def update_object(self, id, data):
+    def update_object(self, obj, data):
         client = data.get('client')
         m1 = data.get('is_m1')
-        obj = RelationClientMercado.query.get(id)
         if client:
             obj.client = client
         if m1:
@@ -162,8 +188,7 @@ class RateByUneAndPeriod(ControlTables):
             data.get('date')
         )
 
-    def update_object(self, id, data):
-        obj = ControlCategoryRateByUneAndPeriod.query.get(id)
+    def update_object(self, obj, data):
         month = data.get('month')
         une = data.get('une')
         rate = data.get('rate')

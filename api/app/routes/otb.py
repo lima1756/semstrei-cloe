@@ -4,58 +4,58 @@ from sqlalchemy import asc
 from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
-import random
-import time
-import string
+from app.libs.decorators import login_required
 import simplejson
+# import random
+# import time
+# import string
 
 otb_blueprint = Blueprint('otb', __name__)
 
 
 class OTB(MethodView):
-    def random_date(self, prop):
-        format = '%d-%b-%Y'
-        start = "01-JAN-2020"
-        end = "01-DEC-2020"
-        stime = time.mktime(time.strptime(start, format))
-        etime = time.mktime(time.strptime(end, format))
+    # def random_date(self, prop):
+    #     format = '%d-%b-%Y'
+    #     start = "01-JAN-2020"
+    #     end = "01-DEC-2020"
+    #     stime = time.mktime(time.strptime(start, format))
+    #     etime = time.mktime(time.strptime(end, format))
 
-        ptime = stime + prop * (etime - stime)
+    #     ptime = stime + prop * (etime - stime)
 
-        return time.strftime(format, time.localtime(ptime))
+    #     return time.strftime(format, time.localtime(ptime))
 
-    def gen_fake_data(self):
-        letters = string.ascii_lowercase
-        otb = []
-        for i in range(150000):
-            a = OtbResults(1, 30,
-                           self.random_date(random.random()),
-                           False, -1, self.random_date(random.random()),
-                           random.choice(letters),
-                           random.choice(letters),
-                           random.choice(letters),
-                           random.choice(letters),
-                           random.randint(0, 50000),
-                           random.randint(0, 50000),
-                           random.randint(0, 50000),
-                           random.randint(0, 500),
-                           random.randint(0, 50000),
-                           random.randint(0, 50000),
-                           random.randint(0, 50000),
-                           random.randint(0, 50000),
-                           random.random()
-                           )
-            otb.append(a)
-        db.session.bulk_save_objects(otb)
-        db.session.commit()
-        responseObject = {
-            'status': 'success'
-        }
-        return make_response(simplejson.dumps(responseObject)), 200
+    # def gen_fake_data(self):
+    #     letters = string.ascii_lowercase
+    #     otb = []
+    #     for i in range(150000):
+    #         a = OtbResults(1, 30,
+    #                        self.random_date(random.random()),
+    #                        False, -1, self.random_date(random.random()),
+    #                        random.choice(letters),
+    #                        random.choice(letters),
+    #                        random.choice(letters),
+    #                        random.choice(letters),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 500),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 50000),
+    #                        random.randint(0, 50000),
+    #                        random.random()
+    #                        )
+    #         otb.append(a)
+    #     db.session.bulk_save_objects(otb)
+    #     db.session.commit()
+    #     responseObject = {
+    #         'status': 'success'
+    #     }
+    #     return make_response(simplejson.dumps(responseObject)), 200
 
-    def post(self):
-        # TODO: remove this
-        return self.gen_fake_data()
+    # def post(self):
+    #     return self.gen_fake_data()
 
     def get_table(self, categoria, submarca, une, mercado, current_period, breakdown=False):
 
@@ -144,6 +144,7 @@ class OTB(MethodView):
             })
         return response
 
+    @login_required
     def get(self):
         categoria = request.args.get('categoria')
         une = request.args.get('une')

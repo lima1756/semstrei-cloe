@@ -3,6 +3,7 @@ from flask.views import MethodView
 from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
+from app.libs.decorators import login_required
 
 otb_filters_blueprint = Blueprint('otb_filters', __name__)
 
@@ -24,6 +25,7 @@ class Filter(MethodView):
             filter_data.append(row[0])
         return filter_data
 
+    @login_required
     def get(self):
         responseObject = {
             'status': 'success',
