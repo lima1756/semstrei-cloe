@@ -8,7 +8,7 @@ from .libs.extentions import migrate
 from .libs.extentions import mail
 # rutas
 from .routes import user_blueprint, password_recovery_blueprint, auth_blueprint,\
-    otb_blueprint, otb_filters_blueprint
+    otb_blueprint, otb_filters_blueprint, otb_control_tables_blueprint
 # modelos
 from app.models import BlacklistToken, ControlCategoryRateByUneAndPeriod,\
     OtbResults, RecoveryTokens, RelationClientMercado, Role, UserData
@@ -55,7 +55,10 @@ class App:
             )
             self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
             self.app.register_blueprint(otb_blueprint, url_prefix=url_prefix)
-            self.app.register_blueprint(otb_filters_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                otb_filters_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                otb_control_tables_blueprint, url_prefix=url_prefix)
         else:
             raise Exception(
                 'Singletons must be accessed through `get_instance()`.')
