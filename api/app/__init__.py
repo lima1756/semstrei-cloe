@@ -1,16 +1,17 @@
 import os
 import logging
-import numpy
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 from .libs.extentions import db
 from .libs.extentions import migrate
 from .libs.extentions import mail
 # rutas
-from .routes import user_blueprint, password_recovery_blueprint, auth_blueprint
+from .routes import user_blueprint, password_recovery_blueprint, auth_blueprint,\
+    otb_blueprint, otb_filters_blueprint, otb_control_tables_blueprint
 # modelos
-import app.models
+from app.models import BlacklistToken, ControlCategoryRateByUneAndPeriod,\
+    OtbResults, RecoveryTokens, RelationClientMercado, Role, UserData
 
 
 class App:
@@ -32,9 +33,6 @@ class App:
             self.migrate.init_app(self.app, self.db)
             self.mail.init_app(self.app)
 
-            # configuring numpy
-            numpy.seterr(all='warn')
-
             # configuring mail logger
             self.app.extensions['mail'].debug = 0
             # Configuring logger
@@ -48,6 +46,16 @@ class App:
                 filename=logging_dir + logging_file if logging_file else None
             )
 
+            # Handle all unexpected errors:
+            @self.app.errorhandler(Exception)
+            def handle_error(e):
+                logging.error(e)
+                responseObject = {
+                    'status': 'fail',
+                    'message': 'Some error occurred. Please try again.'
+                }
+                return make_response(jsonify(responseObject)), 500
+
             # Registrando rutas
             url_prefix = '/api'
             self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
@@ -56,6 +64,11 @@ class App:
                 url_prefix=url_prefix
             )
             self.app.register_blueprint(auth_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(otb_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                otb_filters_blueprint, url_prefix=url_prefix)
+            self.app.register_blueprint(
+                otb_control_tables_blueprint, url_prefix=url_prefix)
         else:
             raise Exception(
                 'Singletons must be accessed through `get_instance()`.')
