@@ -70,7 +70,7 @@ class UserAPI(MethodView):
         elif page is not None and page_size is None:
             page_size = 10
             page = int(page)-1
-        else:
+        elif page is None and page_size is None:
             page = 0
             page_size = -1
         try:
