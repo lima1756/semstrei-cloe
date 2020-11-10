@@ -25,7 +25,7 @@ class ControlTables(MethodView):
     def construct_json(self, obj):
         pass
 
-    def get_all_users(self):
+    def get_all_objects(self):
         page = request.args.get('page')
         page_size = request.args.get('page_size')
         if page is None and page_size is not None:
@@ -93,7 +93,7 @@ class ControlTables(MethodView):
     @login_required
     def get(self, id):
         if id == 'all':
-            return self.get_all_users()
+            return self.get_all_objects()
         else:
             obj = self.get_object(id)
             if obj is not None:
@@ -114,7 +114,7 @@ class ControlTables(MethodView):
         if obj:
             db.session.delete(obj)
         else:
-            raise IndexError("user with id "+str(id)+" not found")
+            raise IndexError("object with id "+str(id)+" not found")
 
     @login_required
     def delete(self, id):
