@@ -36,6 +36,14 @@ class TestSuperVector(BaseTestApp):
     def tearDown(self):
         pass  # doesn't use any of the app set up
 
+    def test_header_iter(self):
+        count = 0
+        for i in self._header_1:
+            self.assertEqual(i, (self._header_1.get_dimensions()[0].get_category(count // 4)
+                                 , self._header_1.get_dimensions()[1].get_category(count % 4),))
+            count += 1
+
+
     def test_get_dimension_name(self):
         self.assertEqual(self._dimension_13.get_name(), "Fruits")
 
@@ -169,7 +177,6 @@ class TestSuperVector(BaseTestApp):
                                 self._super_vector_2.get_data(
         )[x1[-1]:y1[-1], x2[-1]:y2[-1]],
             np.arange(12, 36, 2).reshape(3, 4)[x1[-1]:y1[-1], x2[-1]:y2[-1]])
-
 
 if __name__ == '__main__':
     unittest.main()
