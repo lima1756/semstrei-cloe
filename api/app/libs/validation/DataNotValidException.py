@@ -1,0 +1,2 @@
+class DataNotValidException(Exception):
+    pass

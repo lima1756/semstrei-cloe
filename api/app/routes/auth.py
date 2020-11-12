@@ -12,21 +12,19 @@ auth_blueprint = Blueprint('auth', __name__)
 
 class Auth(MethodView):
     def login(self):
-        # get the post data
-        post_data = request.get_json()
+        data = request.get_json()
         try:
-            # fetch the user data
             user = UserData.query.filter_by(
-                email=post_data.get('email')
+                email=data.get('email')
             ).first()
-            if user.check_password(post_data.get('password')):
+            if user.check_password(data.get('password')):
                 if not user.enabled:
                     responseObject = {
                         'status': 'fail',
                         'message': 'User disabled.'
                     }
                     return make_response(jsonify(responseObject)), 403
-                if post_data.get('keep'):
+                if data.get('keep'):
                     days_session = 30
                 else:
                     days_session = 1
