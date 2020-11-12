@@ -51,13 +51,24 @@ class TestUserManagement(BaseTestApp):
         )
         self.assert_success(res)
 
+    def switch_multiple_users_status(self, endpoint, ids):
+        token = self.get_admin_token()
+        return self.client.put(
+            'api/user/'+endpoint,
+            data=json.dumps({
+                'users': ids
+            }),
+            content_type='application/json',
+            headers={'Authorization': 'Bearer '+token}
+        )
+
     def switch_user_status(self, endpoint, email):
         token = self.get_admin_token()
         user = UserData.query.filter_by(
             email=email
         ).first()
         return self.client.put(
-            'api/user/'+str(user.id)+'/' + endpoint,
+            'api/user/'+endpoint+'/'+str(user.id),
             content_type='application/json',
             headers={'Authorization': 'Bearer '+token}
         )
@@ -66,9 +77,31 @@ class TestUserManagement(BaseTestApp):
         res = self.switch_user_status('disable', self.user_status_email)
         self.assert_success(res)
 
+    def test_multiple_user_disable(self):
+        user = UserData.query.filter_by(
+            email=self.user_status_email
+        ).first()
+        user2 = UserData.query.filter_by(
+            email=self.user_status2_email
+        ).first()
+        res = self.switch_multiple_users_status('disable', [user.id, user2.id])
+        self.assert_success(res)
+        self.assertEqual(json.loads(res.data)['updated'], 2)
+
     def test_user_enable(self):
         res = self.switch_user_status('enable', self.user_status_email)
         self.assert_success(res)
+
+    def test_multiple_user_enable(self):
+        user = UserData.query.filter_by(
+            email=self.user_status_email
+        ).first()
+        user2 = UserData.query.filter_by(
+            email=self.user_status2_email
+        ).first()
+        res = self.switch_multiple_users_status('enable', [user.id, user2.id])
+        self.assert_success(res)
+        self.assertEqual(json.loads(res.data)['updated'], 2)
 
     def test_get_user_data(self):
         token = self.get_admin_token()
