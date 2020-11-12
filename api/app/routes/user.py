@@ -47,6 +47,7 @@ class UserAPI(MethodView):
         else:
             raise IndexError("user with id "+str(id)+" not found")
 
+    @admin_required
     def switch_multiple_status(self, status):
         try:
             data = request.get_json()
@@ -72,6 +73,7 @@ class UserAPI(MethodView):
             }
             return make_response(jsonify(responseObject)), 500
 
+    @admin_required
     def switch_single_status(self, id, status=None):
         try:
             self.switch_status(id, status)
