@@ -15,7 +15,6 @@ class Validator:
 
 
 class Strip(Validator):
-
     @classmethod
     def validate(cls, input):
         try:
@@ -32,7 +31,6 @@ class Strip(Validator):
 
 
 class ValidateEmail(Validator):
-
     @classmethod
     def validate(cls, input):
         s = re.search(r"^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,10}$", input)
@@ -101,10 +99,12 @@ class ValidateAlphabeticString(Validator):
 class ValidateNumber(Validator):
     @classmethod
     def validate(cls, input):
-        if input.isNumeric():
+        try:
+            float(input)
             return input
-        cls.error = "Input is not a number"
-        raise DataNotValidException()
+        except ValueError:
+            cls.error = "Input is not a number"
+            raise DataNotValidException()
 
     @classmethod
     def get_error(cls):
@@ -116,12 +116,11 @@ class ValidateNumber(Validator):
 class ValidateInteger(Validator):
     @classmethod
     def validate(cls, input):
-        try:
-            int(input)
+        if input.isnumeric():
             return input
-        except ValueError:
-            cls.error = "Input is not an integer"
-            raise DataNotValidException()
+        cls.error = "Input is not an integer"
+        raise DataNotValidException()
+        
 
     @classmethod
     def get_error(cls):

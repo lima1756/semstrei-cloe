@@ -55,6 +55,24 @@ class TestInputValidation(BaseTestApp):
         self.assertRaises(validation.DataNotValidException,
                           validation.ValidateAlphabeticString.validate, "1234")
 
+    def test_number(self):
+        s = validation.ValidateNumber.validate("3.141592")
+        self.assertEqual(s, "3.141592")
+        self.assertIsNone(validation.ValidateNumber.get_error())
+
+    def test_number_fail(self):
+        self.assertRaises(validation.DataNotValidException,
+                          validation.ValidateNumber.validate, "asdf")
+
+    def test_integer(self):
+        s = validation.ValidateInteger.validate("5")
+        self.assertEqual(s, "5")
+        self.assertIsNone(validation.ValidateInteger.get_error())
+
+    def test_integer_fail(self):
+        self.assertRaises(validation.DataNotValidException,
+                          validation.ValidateInteger.validate, "asdf")
+
     def test_input_validation(self):
         validator = validation.InputValidation({"name": "asdf", "mail": "lm@mail.com"}, {"name": [
                                                validation.Strip, validation.ValidateAlphabeticString], "mail": [validation.Strip, validation.ValidateEmail]})
