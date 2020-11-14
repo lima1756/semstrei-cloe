@@ -1,14 +1,15 @@
 import logging
 from flask import Blueprint, request, jsonify, make_response, render_template
-from flask.views import MethodView
+from .route_view import RouteView
 from app.models import ControlCategoryRateByUneAndPeriod, RelationClientMercado
 from app.libs import db
 from app.libs.decorators import login_required
+from app.libs import validation
 
 otb_control_tables_blueprint = Blueprint('otb_control_tables', __name__)
 
 
-class ControlTables(MethodView):
+class ControlTables(RouteView):
 
     def construct_object(self, data):
         pass
@@ -50,18 +51,12 @@ class ControlTables(MethodView):
                     break
                 obj = objs[i]
                 objs_data.append(self.construct_json(obj))
-            responseObject = {
-                'status': 'success',
+            return self.return_success({
                 'data': objs_data
-            }
-            return make_response(jsonify(responseObject)), 200
+            })
         except Exception as e:
             logging.error(e)
-            responseObject = {
-                'status': 'fail',
-                'message': 'Some error occurred. Please try again.'
-            }
-            return make_response(jsonify(responseObject)), 500
+            return self.return_server_error()
 
     @login_required
     def post(self, id):
@@ -69,55 +64,40 @@ class ControlTables(MethodView):
         obj = self.construct_object(data)
         db.session.add(obj)
         db.session.commit()
-        responseObject = {
-            'status': 'success'
-        }
-        return make_response(jsonify(responseObject)), 201
+        return self.return_success_201()
 
     @login_required
     def put(self, id):
         data = request.get_json()
-        obj = self.get_object(id)
-        if obj is not None:
-            obj = self.update_object(obj, data)
-            db.session.add(obj)
-            db.session.commit()
-            responseObject = {
-                'status': 'success'
-            }
-            return make_response(jsonify(responseObject)), 200
-        else:
-            responseObject = {
-                'status': 'fail',
-                'message': 'object not found'
-            }
-            return make_response(jsonify(responseObject)), 404
+        if id.isnumeric():
+            obj = self.get_object(id)
+            if obj is not None:
+                obj = self.update_object(obj, data)
+                db.session.add(obj)
+                db.session.commit()
+                return self.return_success()
+        return self.return_not_found({
+            'message': 'object not found'
+        })
 
     @login_required
     def get(self, id):
         if id == 'all':
             return self.get_all_objects()
-        else:
+        elif id.isnumeric():
             obj = self.get_object(id)
             if obj is not None:
-                responseObject = {
-                    'status': 'success',
-                    'data': self.construct_json(obj)
-                }
-                return make_response(jsonify(responseObject)), 200
-            else:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'object not found'
-                }
-                return make_response(jsonify(responseObject)), 404
+                return self.return_success({'data': self.construct_json(obj)
+                                            })
+        return self.return_not_found({'message': 'object not found'})
 
     def delete_object(self, id):
-        obj = self.get_object(id)
-        if obj:
-            db.session.delete(obj)
-        else:
-            raise IndexError("object with id "+str(id)+" not found")
+        if id.isnumeric():
+            obj = self.get_object(id)
+            if obj:
+                db.session.delete(obj)
+                return
+        raise IndexError("object with id "+str(id)+" not found")
 
     @login_required
     def delete(self, id):
@@ -132,33 +112,43 @@ class ControlTables(MethodView):
                         count += 1
                     except IndexError as e:
                         pass
-        else:
+        elif id.isnumeric():
             try:
                 self.delete_object(id)
                 count += 1
             except IndexError as e:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'object not found'
-                }
-                return make_response(jsonify(responseObject)), 404
+                return self.return_not_found({'message': 'object not found'})
+        else:
+            return self.return_not_found({'message': 'object not found'})
         db.session.commit()
-        responseObject = {
-            'status': 'success',
-            'deleted': count
-        }
-        return make_response(jsonify(responseObject)), 200
+        return self.return_success({'deleted': count})
 
 
 class RelationClientMercadoRoute(ControlTables):
 
     def construct_object(self, data):
+        check = validation.InputValidation(data, {
+            'client': [validation.Strip, validation.ValidateNotEmpty],
+            'is_m1': [validation.ValidateNotEmpty]
+        })
+        try:
+            data = check.validate()
+        except validation.DataNotValidException:
+            return self.return_data_not_valid(check)
         return RelationClientMercado(
             data.get('client'),
             data.get('is_m1')
         )
 
     def update_object(self, obj, data):
+        check = validation.InputValidation(data, {
+            'client': [validation.Strip, validation.ValidateNotEmpty],
+            'is_m1': [validation.ValidateNotEmpty]
+        })
+        try:
+            data = check.validate()
+        except validation.DataNotValidException:
+            return self.return_data_not_valid(check)
         client = data.get('client')
         m1 = data.get('is_m1')
         if client:
@@ -183,7 +173,21 @@ class RelationClientMercadoRoute(ControlTables):
 
 class RateByUneAndPeriod(ControlTables):
 
+    def validate_input(self, data):
+        check = validation.InputValidation(data, {
+            'month': [validation.Strip, validation.ValidateNotEmpty],
+            'une': [validation.Strip, validation.ValidateNotEmpty],
+            'rate': [validation.ValidateNumber],
+            'date': [validation.Strip]
+        })
+        return check
+
     def construct_object(self, data):
+        try:
+            check = self.validate_input(data)
+            data = check.validate()
+        except validation.DataNotValidException:
+            return self.return_data_not_valid(check)
         return ControlCategoryRateByUneAndPeriod(
             data.get('month'),
             data.get('une'),
@@ -192,6 +196,11 @@ class RateByUneAndPeriod(ControlTables):
         )
 
     def update_object(self, obj, data):
+        try:
+            check = self.validate_input(data)
+            data = check.validate()
+        except validation.DataNotValidException:
+            return self.return_data_not_valid(check)
         month = data.get('month')
         une = data.get('une')
         rate = data.get('rate')

@@ -1,7 +1,6 @@
 import logging
 import jwt
 from flask import Blueprint, request, make_response, jsonify, render_template
-from flask.views import MethodView
 from flask_mail import Message
 
 from app.models.UserData import UserData
@@ -10,11 +9,14 @@ from app.models.RecoveryTokens import RecoveryTokens
 from app.libs.decorators import admin_required
 from app.libs.decorators import login_required
 from app.libs import db, mail
+from app.libs import validation
+
+from .route_view import RouteView
 
 user_blueprint = Blueprint('user', __name__)
 
 
-class UserAPI(MethodView):
+class UserAPI(RouteView):
 
     def obtain_user_id_from_token(self):
         auth_header = request.headers.get('Authorization')
@@ -24,16 +26,12 @@ class UserAPI(MethodView):
     def get_user(self, id):
         user = UserData.query.get(id)
         if user:
-            responseObject = {
-                'status': 'success',
+            return self.return_success({
                 'data': user.get_data_as_dict()
-            }
-            return make_response(jsonify(responseObject)), 200
-        responseObject = {
-            'status': 'fail',
+            })
+        return self.return_not_found({
             'message': 'User not found'
-        }
-        return make_response(jsonify(responseObject)), 404
+        })
 
     def get_self_user(self):
         id = self.obtain_user_id_from_token()
@@ -45,16 +43,11 @@ class UserAPI(MethodView):
             user.enabled = (not user.enabled) if status is None else status
             db.session.add(user)
             db.session.commit()
-            responseObject = {
-                'status': 'success',
-            }
-            return make_response(jsonify(responseObject)), 201
+            return self.return_success_201(None)
         else:
-            responseObject = {
-                'status': 'fail',
+            return self.return_not_found({
                 'message': 'User doesn\'t exist'
-            }
-            return make_response(jsonify(responseObject)), 404
+            })
 
     @admin_required
     def get_specific_user(self, id):
@@ -83,18 +76,12 @@ class UserAPI(MethodView):
                     break
                 user = users[i]
                 users_data.append(user.get_data_as_dict())
-            responseObject = {
-                'status': 'success',
+            return self.return_success({
                 'data': users_data
-            }
-            return make_response(jsonify(responseObject)), 200
+            })
         except Exception as e:
             logging.error(e)
-            responseObject = {
-                'status': 'fail',
-                'message': 'Some error occurred. Please try again.'
-            }
-            return make_response(jsonify(responseObject)), 500
+            return self.return_server_error()
 
     def update_user(self, id):
         try:
@@ -102,6 +89,17 @@ class UserAPI(MethodView):
             resp = UserData.decode_auth_token(auth_token)
             curr_is_admin = UserData.query.get(resp).admin
             data = request.get_json()
+            check = validation.InputValidation(data, {
+                'email': [validation.Strip, validation.ValidateEmail],
+                'password': [validation.Strip, validation.ValidatePassword],
+                'name': [validation.Strip, validation.ValidateAlphabeticString],
+                'phone_number': [validation.Strip, validation.ValidateInteger],
+                'role': [validation.ValidateInteger],
+            })
+            try:
+                data = check.validate()
+            except validation.DataNotValidException:
+                return self.return_data_not_valid(check)
             user = UserData.query.get(id)
             if user:
                 if data.get('email'):
@@ -118,23 +116,14 @@ class UserAPI(MethodView):
                     user.admin = data.get('role') == 0
                 db.session.add(user)
                 db.session.commit()
-                responseObject = {
-                    'status': 'success'
-                }
-                return make_response(jsonify(responseObject)), 200
+                return self.return_success(None)
             else:
-                responseObject = {
-                    'status': 'success',
+                return self.return_not_found({
                     'message': 'no user found'
-                }
-                return make_response(jsonify(responseObject)), 404
+                })
         except Exception as e:
             logging.error(e)
-            responseObject = {
-                'status': 'fail',
-                'message': 'Some error occurred. Please try again.'
-            }
-            return make_response(jsonify(responseObject)), 500
+            return self.return_server_error()
 
     @admin_required
     def update_user_admin(self, id):
@@ -147,6 +136,16 @@ class UserAPI(MethodView):
         user = UserData.query.filter_by(email=data.get('email')).first()
         role = data.get('role')
         if not user:
+            check = validation.InputValidation(data, {
+                'email': [validation.Strip, validation.ValidateNotEmpty, validation.ValidateEmail],
+                'role': [validation.ValidateNotEmpty, validation.ValidateInteger],
+                'name': [validation.Strip, validation.ValidateAlphabeticString],
+                'phone_number': [validation.Strip, validation.ValidateInteger]
+            })
+            try:
+                check.validate()
+            except validation.DataNotValidException:
+                return self.return_data_not_valid(check)
             plain_password = UserData.gen_password()
             email = data.get('email')
             name = data.get('name')
@@ -173,24 +172,14 @@ class UserAPI(MethodView):
                 mail.send(msg)
                 db.session.add(user)
                 db.session.commit()
-                responseObject = {
-                    'status': 'success',
+                return self.return_success({
                     'message': 'Successfully registered.'
-                }
-                return make_response(jsonify(responseObject)), 200
+                })
             except Exception as e:
                 logging.error(e)
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
-                }
-                return make_response(jsonify(responseObject)), 500
+                return self.return_server_error()
         else:
-            responseObject = {
-                'status': 'fail',
-                'message': 'User already exists.',
-            }
-            return make_response(jsonify(responseObject)), 409
+            return self.return_response('fail', {'message': 'User already exists.'}, 409)
 
     @login_required
     def get(self, id):
@@ -198,27 +187,29 @@ class UserAPI(MethodView):
             return self.get_self_user()
         elif id == 'all':
             return self.get_all_users()
-        else:
+        elif id.isnumeric():
             return self.get_specific_user(id)
+        else:
+            return self.return_response('fail', {'message': 'Not valid id.'}, 422)
 
     @login_required
     def put(self, id=None, action=None):
         if action is None:
             if id is None:
                 return self.update_user(self.obtain_user_id_from_token())
-            else:
+            elif id.isnumeric():
                 return self.update_user_admin(id)
+            else:
+                return self.return_response('fail', {'message': 'Not valid id.'}, 422)
         else:
             if action == 'enable':
                 return self.switch_status(id, True)
             elif action == 'disable':
                 return self.switch_status(id, False)
             else:
-                responseObject = {
-                    'status': 'fail',
+                return self.return_not_found({
                     'message': 'page not found'
-                }
-                return make_response(jsonify(responseObject)), 404
+                })
 
     def delete_user(self, id):
         user = UserData.query.get(id)
@@ -241,22 +232,20 @@ class UserAPI(MethodView):
                         count += 1
                     except IndexError as e:
                         pass
-        else:
+        elif id.isnumeric():
             try:
                 self.delete_user(id)
                 count += 1
             except IndexError as e:
-                responseObject = {
-                    'status': 'fail',
+                return self.return_not_found({
                     'message': 'User doesn\'t exist'
-                }
-                return make_response(jsonify(responseObject)), 404
+                })
+        else:
+            return self.return_response('fail', {'message': 'Not valid id.'}, 422)
         db.session.commit()
-        responseObject = {
-            'status': 'success',
+        return self.return_success_201({
             'deleted': count
-        }
-        return make_response(jsonify(responseObject)), 201
+        })
 
 
 # define the API resources

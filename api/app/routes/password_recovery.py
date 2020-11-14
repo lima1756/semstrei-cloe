@@ -1,7 +1,7 @@
 import logging
 import jwt
 from flask import Blueprint, request, make_response, jsonify, render_template
-from flask.views import MethodView
+from .route_view import RouteView
 from flask_mail import Message
 
 from app.models.UserData import UserData
@@ -11,7 +11,7 @@ from app.libs import db, mail
 password_recovery_blueprint = Blueprint('passsword_recovery', __name__)
 
 
-class RequestRecoverPassword(MethodView):
+class RequestRecoverPassword(RouteView):
 
     def get(self):
         try:
@@ -52,7 +52,7 @@ class RequestRecoverPassword(MethodView):
         return make_response(jsonify(responseObject)), 404
 
 
-class RecoverPassword(MethodView):
+class RecoverPassword(RouteView):
 
     def get(self):
         try:

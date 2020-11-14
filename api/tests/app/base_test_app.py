@@ -18,7 +18,7 @@ class BaseTestApp(TestCase):
     user_testing_email = "user3@testingemail.com"
     user_name = "test name"
     user_phone_number = "331233112"
-    password = 'password'
+    password = 'password123!'
 
     def setUp(self):
         self.db = self.flask_app.db

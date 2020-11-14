@@ -73,6 +73,15 @@ class TestInputValidation(BaseTestApp):
         self.assertRaises(validation.DataNotValidException,
                           validation.ValidateInteger.validate, "asdf")
 
+    def test_date(self):
+        s = validation.ValidateDate.validate("04-OCT-2020")
+        self.assertEqual(s, "04-OCT-2020")
+        self.assertIsNone(validation.ValidateInteger.get_error())
+
+    def test_date_fail(self):
+        self.assertRaises(validation.DataNotValidException,
+                          validation.ValidateInteger.validate, "asdf")
+
     def test_input_validation(self):
         validator = validation.InputValidation({"name": "asdf", "mail": "lm@mail.com"}, {"name": [
                                                validation.Strip, validation.ValidateAlphabeticString], "mail": [validation.Strip, validation.ValidateEmail]})

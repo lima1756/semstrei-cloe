@@ -1,10 +1,11 @@
 from flask import Blueprint, request, make_response, render_template
-from flask.views import MethodView
 from sqlalchemy import asc
 from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
 from app.libs.decorators import login_required
+from app.libs import validation
+from .route_view import RouteView
 import simplejson
 # import random
 # import time
@@ -13,7 +14,7 @@ import simplejson
 otb_blueprint = Blueprint('otb', __name__)
 
 
-class OTB(MethodView):
+class OTB(RouteView):
     # def random_date(self, prop):
     #     format = '%d-%b-%Y'
     #     start = "01-JAN-2020"
@@ -146,20 +147,32 @@ class OTB(MethodView):
 
     @login_required
     def get(self):
-        categoria = request.args.get('categoria')
-        une = request.args.get('une')
-        submarca = request.args.get('submarca')
-        mercado = request.args.get('mercado')
-        current_period = request.args.get('current_period')
+        try:
+            check = validation.InputValidation({
+                'categoria': request.args.get('categoria'),
+                'une': request.args.get('une'),
+                'submarca': request.args.get('submarca'),
+                'mercado': request.args.get('mercado'),
+                'current_period': request.args.get('current_period'),
+            }, {
+                'categoria': [validation.Strip, validation.ValidateAlphabeticString],
+                'une': [validation.Strip, validation.ValidateAlphabeticString],
+                'submarca': [validation.Strip, validation.ValidateAlphabeticString],
+                'mercado': [validation.Strip, validation.ValidateAlphabeticString],
+                'current_period': [validation.Strip, validation.ValidateDate],
+            })
+            data = check.validate()
+        except validation.DataNotValidException:
+            return self.return_data_not_valid(check)
         breakdown = request.args.get('breakdown') == 'True'
-        table = self.get_table(categoria, submarca, une,
-                               mercado, current_period)
+        table = self.get_table(data['categoria'], data['submarca'], data['une'],
+                               data['mercado'], data['current_period'])
         breakdown_tables = None
         if breakdown:
             breakdown_tables = []
             curr_table = -1
-            breakdown_res = self.get_table(categoria, submarca, une,
-                                           mercado, current_period, True)
+            breakdown_res = self.get_table(data['categoria'], data['submarca'], data['une'],
+                                           data['mercado'], data['current_period'], True)
             for i in range(len(breakdown_res)):
                 if i != 0:
                     last = breakdown_res[i-1]

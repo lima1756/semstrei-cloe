@@ -1,4 +1,5 @@
 import re
+import datetime
 from . import DataNotValidException
 
 
@@ -11,23 +12,21 @@ class Validator:
 
     @classmethod
     def get_error(cls):
-        raise NotImplementedError()
+        err = cls.error
+        cls.error = None
+        return err
 
 
 class Strip(Validator):
     @classmethod
     def validate(cls, input):
+        if input is None:
+            return None
         try:
             return input.strip()
         except:
             cls.error = "String not trimmable"
             raise DataNotValidException()
-
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
 
 
 class ValidateEmail(Validator):
@@ -38,12 +37,6 @@ class ValidateEmail(Validator):
             cls.error = "Not valid email"
             raise DataNotValidException()
         return input
-
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
 
 
 class ValidatePassword(Validator):
@@ -56,44 +49,31 @@ class ValidatePassword(Validator):
             raise DataNotValidException()
         return input
 
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
-
 
 class ValidateNotEmpty(Validator):
     @classmethod
     def validate(cls, input):
-        s = re.search(r"^.+$", input)
+        if input is None:
+            cls.error = "Input must not be empty"
+            raise DataNotValidException()
+        s = re.search(r"^.+$", str(input))
         if s is None:
             cls.error = "Input must not be empty"
             raise DataNotValidException()
         return input
-
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
 
 
 class ValidateAlphabeticString(Validator):
     @classmethod
     def validate(cls, input):
+        if input is None:
+            return None
         s = re.search(
-            r"^[a-zA-Z ]+$", input)
+            r"^[a-zA-Z ]*$", input)
         if s is None:
-            cls.error = "Input must not be empty"
+            cls.error = "Not valid alphabetic"
             raise DataNotValidException()
         return input
-
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
 
 
 class ValidateNumber(Validator):
@@ -106,24 +86,22 @@ class ValidateNumber(Validator):
             cls.error = "Input is not a number"
             raise DataNotValidException()
 
-    @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
-
 
 class ValidateInteger(Validator):
     @classmethod
     def validate(cls, input):
-        if input.isnumeric():
+        if str(input).isnumeric():
             return input
         cls.error = "Input is not an integer"
         raise DataNotValidException()
-        
 
+
+class ValidateDate(Validator):
     @classmethod
-    def get_error(cls):
-        err = cls.error
-        cls.error = None
-        return err
+    def validate(cls, input):
+        try:
+            datetime.datetime.strptime(input, '%d-%b-%Y')
+            return input
+        except ValueError:
+            cls.error = "Date not in correct format, dd-MMM-YYY (e.j. 12-Jan-2020)"
+            raise DataNotValidException()
