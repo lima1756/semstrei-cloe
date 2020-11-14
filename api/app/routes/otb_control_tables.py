@@ -69,7 +69,7 @@ class ControlTables(RouteView):
     @login_required
     def put(self, id):
         data = request.get_json()
-        if id.isnumeric():
+        if str(id).isnumeric():
             obj = self.get_object(id)
             if obj is not None:
                 obj = self.update_object(obj, data)
@@ -84,7 +84,7 @@ class ControlTables(RouteView):
     def get(self, id):
         if id == 'all':
             return self.get_all_objects()
-        elif id.isnumeric():
+        elif str(id).isnumeric():
             obj = self.get_object(id)
             if obj is not None:
                 return self.return_success({'data': self.construct_json(obj)
@@ -92,7 +92,7 @@ class ControlTables(RouteView):
         return self.return_not_found({'message': 'object not found'})
 
     def delete_object(self, id):
-        if id.isnumeric():
+        if str(id).isnumeric():
             obj = self.get_object(id)
             if obj:
                 db.session.delete(obj)
@@ -112,7 +112,7 @@ class ControlTables(RouteView):
                         count += 1
                     except IndexError as e:
                         pass
-        elif id.isnumeric():
+        elif str(id).isnumeric():
             try:
                 self.delete_object(id)
                 count += 1
@@ -151,9 +151,9 @@ class RelationClientMercadoRoute(ControlTables):
             return self.return_data_not_valid(check)
         client = data.get('client')
         m1 = data.get('is_m1')
-        if client:
+        if client is not None:
             obj.client = client
-        if m1:
+        if m1 is not None:
             obj.isM1 = m1
         return obj
 
