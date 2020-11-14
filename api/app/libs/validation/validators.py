@@ -14,15 +14,15 @@ class Validator:
         raise NotImplementedError()
 
 
-class Trim(Validator):
+class Strip(Validator):
 
     @classmethod
     def validate(cls, input):
         try:
-            return input.trim()
+            return input.strip()
         except:
             cls.error = "String not trimmable"
-            raise NotImplementedError()
+            raise DataNotValidException()
 
     @classmethod
     def get_error(cls):
@@ -35,7 +35,7 @@ class ValidateEmail(Validator):
 
     @classmethod
     def validate(cls, input):
-        s = re.search(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,10}$", input)
+        s = re.search(r"^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,10}$", input)
         if s is None:
             cls.error = "Not valid email"
             raise DataNotValidException()

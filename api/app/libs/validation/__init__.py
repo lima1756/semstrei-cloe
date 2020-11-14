@@ -7,6 +7,4 @@ from .validators import ValidateAlphabeticString
 from .validators import ValidateNotEmpty
 from .validators import ValidatePassword
 from .validators import ValidateEmail
-from .validators import Trim
-
-
+from .validators import Strip

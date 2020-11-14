@@ -6,6 +6,7 @@ from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
 from app.libs.decorators import login_required
 from app.libs import db
+from app.libs.validation import InputValidation, ValidateEmail, ValidatePassword, Strip
 
 auth_blueprint = Blueprint('auth', __name__)
 
