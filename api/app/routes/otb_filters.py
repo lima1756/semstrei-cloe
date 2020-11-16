@@ -15,6 +15,7 @@ class Filter(MethodView):
         'une': OtbResults.une,
         'mercado': OtbResults.mercado,
         'submarca': OtbResults.submarca,
+        'startDateCurrentPeriodOTB': OtbResults.startDateCurrentPeriodOTB
     }
 
     def get_by_filter(self, filter):
@@ -34,6 +35,7 @@ class Filter(MethodView):
                 'une': self.get_by_filter('une'),
                 'mercado': self.get_by_filter('mercado'),
                 'submarca': self.get_by_filter('submarca'),
+                'periodo': self.get_by_filter('startDateCurrentPeriodOTB'),
             }
         }
         return make_response(jsonify(responseObject)), 200
