@@ -101,10 +101,8 @@ export default function EnhancedTable() {
         })
         .then(function(response){
           setUsers(response.data.data);
-          //console.log('Response: ',response);
         }).catch(function(error){
             handleErrorLoadingUsers('error');
-            //console.log(error);
         })
       };
     
@@ -170,12 +168,16 @@ export default function EnhancedTable() {
       };
     
       const handleClose = () => {
-        getUsers();
         setOpen(false);
+        setTimeout(function () {
+            getUsers();
+        }, 4000);
       };
 
       const handleUsersUpdate = () => {
         getUsers();
+        setUserId([]);
+        setSelected();
       };
     
     //-----------------------Snackbar de Error-------------------------
@@ -207,7 +209,7 @@ export default function EnhancedTable() {
                 </Grid>
             </Grid>
             <Paper className={classes.paper}>
-                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUsersUpdate={handleUsersUpdate}/>
+                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUserUpdate={handleUsersUpdate}/>
                 <TableContainer>
                     <Table
                         className={classes.table}

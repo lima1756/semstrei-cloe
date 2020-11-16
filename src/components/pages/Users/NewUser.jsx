@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  FormLabel, FormControl, FormControlLabel, Grid, Radio, RadioGroup, TextField,
+  FormLabel, FormControl, FormControlLabel, Grid, makeStyles, Radio, RadioGroup, TextField, Tooltip
 } from '@material-ui/core';
 import axios from 'axios';
 import https from 'https';
@@ -13,10 +13,17 @@ const httpsAgent = new https.Agent({
 })
 axios.defaults.options = httpsAgent;
 
+const useStyles = makeStyles((theme) => ({
+  customWidth: {
+    maxWidth: 150,
+  },
+}));
+
 export default function AlertDialog({ open, handleClose }) {
   const [value, setValueR] = useState('');
   const { enqueueSnackbar } = useSnackbar();
   const isLogged = useSelector(state => state.logged);
+  const classes = useStyles();
 
   const handleChange = (event) => {
     setValueR(event.target.value);
@@ -67,11 +74,17 @@ export default function AlertDialog({ open, handleClose }) {
               <RadioGroup aria-label="gender" name="gender1" value={value} onChange={handleChange}>
                 <Grid container spacing={3}>
                   <Grid item xs={6}>
-                    <FormControlLabel value="admin" control={<Radio color="default" />} label="Administrador" />
-                    <FormControlLabel value="tech" control={<Radio color="default" />} label="IT" />
+                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario con poder de crear, modificar y eliminar usuarios' arrow>
+                      <FormControlLabel value="admin" control={<Radio color="default" />} label="Administrador" />
+                    </Tooltip>
+                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario de IT, solo podrá consultar las tablas' arrow>
+                      <FormControlLabel value="tech" control={<Radio color="default" />} label="IT" />
+                    </Tooltip>
                   </Grid>
                   <Grid item xs={5}>
-                    <FormControlLabel value="finance" control={<Radio color="default" />} label="Finanzas" />
+                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario de finanzas, solo podrá consultar las tablas' arrow>
+                      <FormControlLabel value="finance" control={<Radio color="default" />} label="Finanzas" />
+                    </Tooltip>
                   </Grid>
                 </Grid>
               </RadioGroup>

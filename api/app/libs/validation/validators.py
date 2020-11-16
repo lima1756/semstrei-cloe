@@ -23,6 +23,7 @@ class Strip(Validator):
         if input is None:
             return None
         try:
+            cls.error = None
             return input.strip()
         except:
             cls.error = "String not trimmable"
@@ -36,6 +37,7 @@ class ValidateEmail(Validator):
         if s is None:
             cls.error = "Not valid email"
             raise DataNotValidException()
+        cls.error = None
         return input
 
 
@@ -47,6 +49,7 @@ class ValidatePassword(Validator):
         if s is None:
             cls.error = "Password must contain one lowercase letter, uppercase, number, a symbol (*.!%^&,._+-) and be at least 6 characters, maximum 32"
             raise DataNotValidException()
+        cls.error = None
         return input
 
 
@@ -60,6 +63,7 @@ class ValidateNotEmpty(Validator):
         if s is None:
             cls.error = "Input must not be empty"
             raise DataNotValidException()
+        cls.error = None
         return input
 
 
@@ -73,6 +77,7 @@ class ValidateAlphabeticString(Validator):
         if s is None:
             cls.error = "Not valid alphabetic"
             raise DataNotValidException()
+        cls.error = None
         return input
 
 
@@ -81,6 +86,7 @@ class ValidateNumber(Validator):
     def validate(cls, input):
         try:
             float(input)
+            cls.error = None
             return input
         except ValueError:
             cls.error = "Input is not a number"
@@ -91,6 +97,7 @@ class ValidateInteger(Validator):
     @classmethod
     def validate(cls, input):
         if str(input).isnumeric():
+            cls.error = None
             return input
         cls.error = "Input is not an integer"
         raise DataNotValidException()
@@ -101,6 +108,7 @@ class ValidateDate(Validator):
     def validate(cls, input):
         try:
             datetime.datetime.strptime(input, '%d-%b-%Y')
+            cls.error = None
             return input
         except ValueError:
             cls.error = "Date not in correct format, dd-MMM-YYY (e.j. 12-Jan-2020)"

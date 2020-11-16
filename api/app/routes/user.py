@@ -42,12 +42,39 @@ class UserAPI(RouteView):
         if user:
             user.enabled = (not user.enabled) if status is None else status
             db.session.add(user)
-            db.session.commit()
-            return self.return_success_201(None)
         else:
+            raise IndexError("user with id "+str(id)+" not found")
+
+    @admin_required
+    def switch_multiple_status(self, status):
+        try:
+            data = request.get_json()
+            users = data.get('users')
+            count = 0
+            if users is not None:
+                for id in users:
+                    try:
+                        self.switch_status(id, status)
+                        count += 1
+                    except IndexError as e:
+                        pass
+            db.session.commit()
+            return self.return_success_201({'updated': count})
+        except:
+            return self.return_server_error()
+
+    @admin_required
+    def switch_single_status(self, id, status=None):
+        try:
+            self.switch_status(id, status)
+            db.session.commit()
+            return self.return_success_201({'updated': 1})
+        except IndexError:
             return self.return_not_found({
                 'message': 'User doesn\'t exist'
             })
+        except:
+            return self.return_server_error()
 
     @admin_required
     def get_specific_user(self, id):
@@ -193,23 +220,22 @@ class UserAPI(RouteView):
             return self.return_response('fail', {'message': 'Not valid id.'}, 422)
 
     @login_required
-    def put(self, id=None, action=None):
-        if action is None:
-            if id is None:
-                return self.update_user(self.obtain_user_id_from_token())
-            elif id.isnumeric():
-                return self.update_user_admin(id)
+    def put(self, action_or_id=None, id=None):
+        if action_or_id == 'enable':
+            if id is not None:
+                return self.switch_single_status(id, True)
             else:
-                return self.return_response('fail', {'message': 'Not valid id.'}, 422)
+                return self.switch_multiple_status(True)
+        elif action_or_id == 'disable':
+            if id is not None:
+                return self.switch_single_status(id, False)
+            else:
+                return self.switch_multiple_status(False)
         else:
-            if action == 'enable':
-                return self.switch_status(id, True)
-            elif action == 'disable':
-                return self.switch_status(id, False)
+            if action_or_id is None:
+                return self.update_user(self.obtain_user_id_from_token())
             else:
-                return self.return_not_found({
-                    'message': 'page not found'
-                })
+                return self.update_user_admin(action_or_id)
 
     def delete_user(self, id):
         user = UserData.query.get(id)
@@ -262,7 +288,7 @@ user_blueprint.add_url_rule(
 user_blueprint.add_url_rule(
     '/user/<id>',
     view_func=user_api,
-    methods=['GET', 'POST', 'DELETE', 'PUT']
+    methods=['GET', 'POST', 'DELETE']
 )
 user_blueprint.add_url_rule(
     '/user',
@@ -271,18 +297,18 @@ user_blueprint.add_url_rule(
 )
 user_blueprint.add_url_rule(
     '/user',
-    defaults={'id': None, 'action': None},
+    defaults={'action_or_id': None, 'id': None},
     view_func=user_api,
     methods=['PUT']
 )
 user_blueprint.add_url_rule(
-    '/user/<id>',
-    defaults={'action': None},
+    '/user/<action_or_id>',
+    defaults={'id': None},
     view_func=user_api,
     methods=['PUT']
 )
 user_blueprint.add_url_rule(
-    '/user/<id>/<action>',
+    '/user/<action_or_id>/<id>',
     view_func=user_api,
     methods=['PUT']
 )
