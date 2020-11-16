@@ -120,7 +120,7 @@ class TestSuperVector(unittest.TestCase):
     def test_get_absolute_otb(self):
         shape = self._super_vector_1.get_data().shape
         sv_test_percentage_otb = otb_functions.get_absolute_otb(
-            self._super_vector_2, self._super_vector_1)
+            self._super_vector_1, self._super_vector_2)
         self.assertEqual(sv_test_percentage_otb.get_header(),
                          self._super_vector_2.get_header())
         npt.assert_almost_equal(

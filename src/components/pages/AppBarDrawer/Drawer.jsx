@@ -173,7 +173,7 @@ export default function ClippedDrawer() {
               <ListItemIcon>
                 <AccountCircleRoundedIcon />
               </ListItemIcon>
-              <ListItemText primary="Cuenta" />
+              <ListItemText primary="Mi cuenta" />
             </ListItem>
           </List>
           <Divider />

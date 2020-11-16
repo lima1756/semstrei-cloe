@@ -42,6 +42,9 @@ class Dimension:
     def get_categories(self):
         return self._categories
 
+    def get_category(self, index):
+        return self._categories[index]
+
     def set_categories(self, categories):
         self._categories = categories
 
@@ -111,6 +114,17 @@ class Header:
 
     def __str__(self):
         return self._vector_name
+
+    def __iter__(self):
+        indexes = [0] * len(self._dimensions)
+        while indexes[0] < len(self._dimensions[0].get_categories()):
+            yield tuple(map(lambda a: self._dimensions[a[0]].get_category(a[1]), zip(range(len(indexes)), indexes)))
+            for i in range(len(indexes)-1, -1, -1):
+                indexes[i] += 1
+                if indexes[i] >= len(self._dimensions[i].get_categories()) and i != 0:
+                    indexes[i] = 0
+                else:
+                    break
 
     def add_dimension_last(self, dimension):
         self._dimensions.append(dimension)

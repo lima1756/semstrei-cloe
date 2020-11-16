@@ -147,12 +147,12 @@ def get_target_stock(sv_target_venta, increment_stock_factor):
     target_stock_data[number_of_periods -
                       1] = sv_target_venta.get_data()[number_of_periods - 1]
 
-    # Multiply by the increment_factor
+    #   Multiply by the increment_factor
     target_stock_data *= increment_stock_factor
 
     return SuperVector(target_stock_header, target_stock_data)
 
-
+  
 def get_absolute_otb(sv_projection_eom_stock, sv_target_stock):
     """
     Get absolute otb, calcula el OTB = proyeccion_eom_stock - sv_target_stock
@@ -213,8 +213,7 @@ def get_data_projection_eom_stock_for_period(sv_initial_stock, sv_inventario_pis
         # Make Calculation for given period
         projection_eom_stock_by_period_data = sv_initial_stock.get_data()[period]\
             + sv_inventario_piso.get_data()[period] + sv_compras.get_data()[period]\
-            + sv_devoluciones.get_data()[period] - \
-            sv_target_venta.get_data()[period]
+            + sv_devoluciones.get_data()[period] - sv_target_venta.get_data()[period]
 
         return projection_eom_stock_by_period_data
     else:

@@ -35,14 +35,13 @@ export default function EnhancedTableToolbar(props) {
     const { enqueueSnackbar } = useSnackbar();
 
     const handleDelete = () => {
-        console.log('Token: ', isLogged.token);
-        console.log('Users: ', usersId);
         axios.delete('https://150.136.172.48/api/user', {
-            users: usersId,
-        }, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${isLogged.token}`,
+            },
+            data: {
+                users: usersId,
             }
         }).then(function (response) {
             handleUserDelete('success');
@@ -50,7 +49,6 @@ export default function EnhancedTableToolbar(props) {
         }).catch(function (error) {
             handleUserDeleteError('error');
         })
-        console.log(usersId);
     };
 
     // --------------------------- Snackbar success User Added ---------------------- 
@@ -75,7 +73,7 @@ export default function EnhancedTableToolbar(props) {
                 )}
 
             {numSelected > 0 ? (
-                <Tooltip title="Delete">
+                <Tooltip title={numSelected > 1 ? 'Eliminar usuarios' : 'Eliminar usuario'}>
                     <IconButton aria-label="delete" onClick={handleDelete}>
                         <DeleteIcon />
                     </IconButton>

@@ -43,5 +43,5 @@ class TestOracleCX(BaseTestApp):
             for row in result:
                 self.assertTrue(row[0] == 'X')
         except cx_Oracle.DatabaseError:
-            logging.warning(
+            logging.error(
                 "Couldn't resolve TNS, probably wallet hasn't been added to OracleClient/network/admin Please look at the readme project")
