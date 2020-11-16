@@ -16,6 +16,7 @@ class BaseTestApp(TestCase):
     user_status_email = "user1@testingemail.com"
     user_deletable_email = "user2@testingemail.com"
     user_testing_email = "user3@testingemail.com"
+    user_status2_email = "user4@testingemail.com"
     user_name = "test name"
     user_phone_number = "331233112"
     password = 'password'
@@ -59,9 +60,18 @@ class BaseTestApp(TestCase):
                 admin=False,
                 role=1
             )
+            user4 = UserData(
+                email=self.user_status2_email,
+                password=self.password,
+                name=self.user_name,
+                phone_number=self.user_phone_number,
+                admin=False,
+                role=1
+            )
             self.db.session.add(user1)
             self.db.session.add(user2)
             self.db.session.add(user3)
+            self.db.session.add(user4)
             self.db.session.add(admin)
             self.db.session.commit()
 
