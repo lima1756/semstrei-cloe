@@ -73,6 +73,7 @@ class OTB(MethodView):
                 'projectionEomStock'),
             func.sum(OtbResults.otb_minus_ctb).label('otb_minus_ctb'),
             func.sum(OtbResults.percentage_otb).label('percentage_otb'),
+            OtbResults.daysLongCurrentPeriodOTB,
         ]
 
         # WHERE
@@ -92,7 +93,8 @@ class OTB(MethodView):
         # GROUP BY
         group_by = [
             OtbResults.startDateProjectionPeriodOTB,
-            OtbResults.startDateCurrentPeriodOTB
+            OtbResults.startDateCurrentPeriodOTB,
+            OtbResults.daysLongCurrentPeriodOTB
         ]
 
         # ORDER BY
@@ -125,6 +127,18 @@ class OTB(MethodView):
             .order_by(*order_by).all()
         response = []
         for row in res_query:
+            period_length = ""
+            print(row[11])
+            if row[11] == 1:
+                period_length = "1 dia"
+            elif row[11] == 7:
+                period_length = "1 semana"
+            elif row[11] == 14:
+                period_length = "2 semanas"
+            elif row[11] == 30 or row[11] == 28 or row[11] == 29 or row[11] == 31:
+                period_length = "1 mes"
+            else:
+                period_length = str(row[11])+" dias"
             response.append({
                 "startDateCurrentPeriodOTB": row[0].isoformat(),
                 "startDateProjectionPeriodOTB": row[1].isoformat(),
@@ -137,10 +151,11 @@ class OTB(MethodView):
                 "projectionEomStock": row[8],
                 "otb_minus_ctb": row[9],
                 "percentage_otb": row[10],
-                "categoria": row[11] if len(row) > 11 else categoria,
-                "submarca": row[12] if len(row) > 12 else submarca,
-                "une": row[13] if len(row) > 13 else une,
-                "mercado": row[14] if len(row) > 14 else mercado,
+                "period_length": period_length,
+                "categoria": row[12] if len(row) > 12 else categoria,
+                "submarca": row[13] if len(row) > 13 else submarca,
+                "une": row[14] if len(row) > 14 else une,
+                "mercado": row[15] if len(row) > 15 else mercado,
             })
         return response
 
