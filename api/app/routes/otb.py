@@ -6,6 +6,7 @@ from app.models.OtbResults import OtbResults
 from app.libs import db
 from app.libs.decorators import login_required
 import simplejson
+import datetime
 # import random
 # import time
 # import string
@@ -139,9 +140,13 @@ class OTB(MethodView):
                 period_length = "1 mes"
             else:
                 period_length = str(row[11])+" dias"
+            startPeriod = datetime.datetime.strptime(
+                row[0].isoformat(), '%Y-%m-%dT%H:%M:%S')
+            startProjection = datetime.datetime.strptime(
+                row[1].isoformat(), '%Y-%m-%dT%H:%M:%S')
             response.append({
-                "startDateCurrentPeriodOTB": row[0].isoformat(),
-                "startDateProjectionPeriodOTB": row[1].isoformat(),
+                "startDateCurrentPeriodOTB": startPeriod.strftime('%d-%b-%Y'),
+                "startDateProjectionPeriodOTB": startProjection.strftime('%d-%b-%Y'),
                 "initialStock": row[2],
                 "inventoryOnStores": row[3],
                 "purchases": row[4],
