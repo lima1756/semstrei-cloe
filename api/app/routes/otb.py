@@ -58,6 +58,32 @@ class OTB(MethodView):
     # def post(self):
     #     return self.gen_fake_data()
 
+    def format_date(self, date_raw):
+        date = datetime.datetime.strptime(
+            date_raw.isoformat(), '%Y-%m-%dT%H:%M:%S')
+        month = date.strftime("%b")
+        if month == "Jan":
+            month = "Ene"
+        elif month == "Apr":
+            month = "Abr"
+        elif month == "Aug":
+            month = "Ago"
+        elif month == "Dec":
+            month = "Dic"
+        return date.strftime('%d-') + month + date.strftime("-%Y")
+
+    def format_period_length(self, raw):
+        period_length = str(raw) + " dias"
+        if raw == 1:
+            period_length = "1 dia"
+        elif raw == 7:
+            period_length = "1 semana"
+        elif raw == 14:
+            period_length = "2 semanas"
+        elif raw == 30 or raw == 28 or raw == 29 or raw == 31:
+            period_length = "1 mes"
+        return period_length
+
     def get_table(self, categoria, submarca, une, mercado, current_period, breakdown=False):
 
         # SELECT columns
@@ -128,25 +154,10 @@ class OTB(MethodView):
             .order_by(*order_by).all()
         response = []
         for row in res_query:
-            period_length = ""
-            print(row[11])
-            if row[11] == 1:
-                period_length = "1 dia"
-            elif row[11] == 7:
-                period_length = "1 semana"
-            elif row[11] == 14:
-                period_length = "2 semanas"
-            elif row[11] == 30 or row[11] == 28 or row[11] == 29 or row[11] == 31:
-                period_length = "1 mes"
-            else:
-                period_length = str(row[11])+" dias"
-            startPeriod = datetime.datetime.strptime(
-                row[0].isoformat(), '%Y-%m-%dT%H:%M:%S')
-            startProjection = datetime.datetime.strptime(
-                row[1].isoformat(), '%Y-%m-%dT%H:%M:%S')
+            period_length = self.format_period_length(row[11])
             response.append({
-                "startDateCurrentPeriodOTB": startPeriod.strftime('%d-%b-%Y'),
-                "startDateProjectionPeriodOTB": startProjection.strftime('%d-%b-%Y'),
+                "startDateCurrentPeriodOTB": self.format_date(row[0]),
+                "startDateProjectionPeriodOTB": self.format_date(row[1]),
                 "initialStock": row[2],
                 "inventoryOnStores": row[3],
                 "purchases": row[4],
