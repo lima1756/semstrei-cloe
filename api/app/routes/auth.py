@@ -89,6 +89,7 @@ class Auth(MethodView):
             }
             return make_response(jsonify(responseObject)), 400
 
+    @login_required
     def refresh(self):
         auth_header = request.headers.get('Authorization')
         auth_token = auth_header.split(" ")[1]
@@ -99,14 +100,7 @@ class Auth(MethodView):
             user = UserData.query.get(resp['id'])
             new_auth_token = user.encode_auth_token(None, expiration_date)
             if auth_token:
-                try:
-                    self.disable_token(auth_token)
-                except IntegrityError:
-                    responseObject = {
-                        'status': 'fail',
-                        'message': 'Token Disabled'
-                    }
-                    return make_response(jsonify(responseObject)), 400
+                self.disable_token(auth_token)
                 responseObject = {
                     'status': 'success',
                     'message': 'Successfully refreshed.',

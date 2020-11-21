@@ -25,6 +25,14 @@ def login_required(f):
         if auth_token:
             resp = UserData.decode_auth_token(auth_token)
             if isinstance(resp, int):
+                black_list = BlacklistToken.query.filter_by(
+                    token=auth_token).first()
+                if black_list is not None:
+                    responseObject = {
+                        'status': 'fail',
+                        'message': 'Token not valid'
+                    }
+                    return make_response(jsonify(responseObject)), 401
                 user = UserData.query.get(resp)
                 if user and user.enabled:
                     return f(*args, **kwargs)
