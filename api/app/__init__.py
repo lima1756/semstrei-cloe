@@ -56,6 +56,14 @@ class App:
                 }
                 return make_response(jsonify(responseObject)), 500
 
+            # Handle cahche responses
+            @self.app.after_request
+            def after_request(response):
+                response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
+                response.headers["Expires"] = 0
+                response.headers["Pragma"] = "no-cache"
+                return response
+
             # Registrando rutas
             url_prefix = '/api'
             self.app.register_blueprint(user_blueprint, url_prefix=url_prefix)
