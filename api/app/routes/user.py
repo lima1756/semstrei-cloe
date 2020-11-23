@@ -3,6 +3,7 @@ import jwt
 from flask import Blueprint, request, make_response, jsonify, render_template
 from flask.views import MethodView
 from flask_mail import Message
+from fuzzywuzzy import fuzz
 
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
@@ -38,6 +39,25 @@ class UserAPI(MethodView):
     def get_self_user(self):
         id = self.obtain_user_id_from_token()
         return self.get_user(id)
+
+    @admin_required
+    def search_user(self, search):
+        users = UserData.query.all()
+        output = []
+        for user in users:
+            print(user.email)
+            print(fuzz.token_set_ratio(user.email, search))
+            print(user.name)
+            print(fuzz.token_set_ratio(user.name, search))
+            print(user.phone_number)
+            print(fuzz.token_set_ratio(user.phone_number, search))
+            if fuzz.token_set_ratio(user.email, search) > 60 or fuzz.token_set_ratio(user.name, search) > 60 or fuzz.token_set_ratio(user.phone_number, search) > 60:
+                output.append(user.get_data_as_dict())
+        responseObject = {
+            'status': 'success',
+            'data': output
+        }
+        return make_response(jsonify(responseObject)), 200
 
     def switch_status(self, id, status=None):
         user = UserData.query.get(id)
@@ -233,11 +253,13 @@ class UserAPI(MethodView):
             return make_response(jsonify(responseObject)), 409
 
     @login_required
-    def get(self, id):
+    def get(self, id, search):
         if id is None:
             return self.get_self_user()
         elif id == 'all':
             return self.get_all_users()
+        elif id == 'search':
+            return self.search_user(search)
         else:
             return self.get_specific_user(id)
 
@@ -305,14 +327,36 @@ user_api = UserAPI.as_view('user_api')
 # add Rules for API Endpoints
 user_blueprint.add_url_rule(
     '/user',
-    defaults={'id': None},
+    defaults={'id': None, 'search': None},
     view_func=user_api,
-    methods=['GET', 'DELETE']
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>',
+    defaults={'search': None},
+    view_func=user_api,
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>/<search>',
+    view_func=user_api,
+    methods=['GET']
 )
 user_blueprint.add_url_rule(
     '/user/<id>',
     view_func=user_api,
-    methods=['GET', 'POST', 'DELETE']
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user',
+    defaults={'id': None},
+    view_func=user_api,
+    methods=['DELETE']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>',
+    view_func=user_api,
+    methods=['DELETE']
 )
 user_blueprint.add_url_rule(
     '/user',

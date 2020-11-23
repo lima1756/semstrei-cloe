@@ -49,7 +49,6 @@ class TestSuperVector(unittest.TestCase):
         new_header = Header(
             "", [self._dimension_11, self._dimension_12, self._dimension_13, self._dimension_14])
         self.assertEqual(new_header, sv_con_extra_dim.get_header())
-        print(sv_con_extra_dim.get_data())
         npt.assert_almost_equal(sv_con_extra_dim.get_data(), [[[[0.,   0.],
                                                                 [0., 1.],
                                                                 [0., 2.]],
@@ -124,7 +123,7 @@ class TestSuperVector(unittest.TestCase):
         self.assertEqual(sv_test_percentage_otb.get_header(),
                          self._super_vector_2.get_header())
         npt.assert_almost_equal(
-            sv_test_percentage_otb.get_data(), (-12 * np.ones(shape)))
+            sv_test_percentage_otb.get_data(), (12 * np.ones(shape)))
 
     def test_get_target_stock(self):
         test_target_stock = otb_functions.get_target_stock(
