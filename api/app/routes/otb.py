@@ -7,6 +7,7 @@ from app.libs.decorators import login_required
 from app.libs import validation
 from .route_view import RouteView
 import simplejson
+import datetime
 # import random
 # import time
 # import string
@@ -58,6 +59,32 @@ class OTB(RouteView):
     # def post(self):
     #     return self.gen_fake_data()
 
+    def format_date(self, date_raw):
+        date = datetime.datetime.strptime(
+            date_raw.isoformat(), '%Y-%m-%dT%H:%M:%S')
+        month = date.strftime("%b")
+        if month == "Jan":
+            month = "Ene"
+        elif month == "Apr":
+            month = "Abr"
+        elif month == "Aug":
+            month = "Ago"
+        elif month == "Dec":
+            month = "Dic"
+        return date.strftime('%d-') + month + date.strftime("-%Y")
+
+    def format_period_length(self, raw):
+        period_length = str(raw) + " dias"
+        if raw == 1:
+            period_length = "1 dia"
+        elif raw == 7:
+            period_length = "1 semana"
+        elif raw == 14:
+            period_length = "2 semanas"
+        elif raw == 30 or raw == 28 or raw == 29 or raw == 31:
+            period_length = "1 mes"
+        return period_length
+
     def get_table(self, categoria, submarca, une, mercado, current_period, breakdown=False):
 
         # SELECT columns
@@ -74,6 +101,7 @@ class OTB(RouteView):
                 'projectionEomStock'),
             func.sum(OtbResults.otb_minus_ctb).label('otb_minus_ctb'),
             func.sum(OtbResults.percentage_otb).label('percentage_otb'),
+            OtbResults.daysLongCurrentPeriodOTB,
         ]
 
         # WHERE
@@ -93,7 +121,8 @@ class OTB(RouteView):
         # GROUP BY
         group_by = [
             OtbResults.startDateProjectionPeriodOTB,
-            OtbResults.startDateCurrentPeriodOTB
+            OtbResults.startDateCurrentPeriodOTB,
+            OtbResults.daysLongCurrentPeriodOTB
         ]
 
         # ORDER BY
@@ -126,9 +155,10 @@ class OTB(RouteView):
             .order_by(*order_by).all()
         response = []
         for row in res_query:
+            period_length = self.format_period_length(row[11])
             response.append({
-                "startDateCurrentPeriodOTB": row[0].isoformat(),
-                "startDateProjectionPeriodOTB": row[1].isoformat(),
+                "startDateCurrentPeriodOTB": self.format_date(row[0]),
+                "startDateProjectionPeriodOTB": self.format_date(row[1]),
                 "initialStock": row[2],
                 "inventoryOnStores": row[3],
                 "purchases": row[4],
@@ -138,10 +168,11 @@ class OTB(RouteView):
                 "projectionEomStock": row[8],
                 "otb_minus_ctb": row[9],
                 "percentage_otb": row[10],
-                "categoria": row[11] if len(row) > 11 else categoria,
-                "submarca": row[12] if len(row) > 12 else submarca,
-                "une": row[13] if len(row) > 13 else une,
-                "mercado": row[14] if len(row) > 14 else mercado,
+                "period_length": period_length,
+                "categoria": row[12] if len(row) > 12 else categoria,
+                "submarca": row[13] if len(row) > 13 else submarca,
+                "une": row[14] if len(row) > 14 else une,
+                "mercado": row[15] if len(row) > 15 else mercado,
             })
         return response
 

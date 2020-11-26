@@ -7,6 +7,8 @@ from app.models.BlacklistToken import BlacklistToken
 from app.libs.decorators import login_required
 from app.libs import db
 from app.libs import validation
+from cx_Oracle import IntegrityError
+import datetime
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -59,6 +61,12 @@ class Auth(RouteView):
             }
             return make_response(jsonify(responseObject)), 500
 
+    def disable_token(self, token):
+        blacklist_token = BlacklistToken(token=token)
+        # insert the token
+        db.session.add(blacklist_token)
+        db.session.commit()
+
     @login_required
     def logout(self):
         auth_header = request.headers.get('Authorization')
@@ -66,11 +74,8 @@ class Auth(RouteView):
         resp = UserData.decode_auth_token(auth_token)
         if not isinstance(resp, str):
             # mark the token as blacklisted
-            blacklist_token = BlacklistToken(token=auth_token)
             try:
-                # insert the token
-                db.session.add(blacklist_token)
-                db.session.commit()
+                self.disable_token(auth_token)
                 responseObject = {
                     'status': 'success',
                     'message': 'Successfully logged out.'
@@ -90,11 +95,38 @@ class Auth(RouteView):
             }
             return make_response(jsonify(responseObject)), 400
 
+    @login_required
+    def refresh(self):
+        auth_header = request.headers.get('Authorization')
+        auth_token = auth_header.split(" ")[1]
+        resp = UserData.get_payload_token(auth_token)
+        if not isinstance(resp['id'], str):
+            expiration_date = datetime.datetime.fromtimestamp(
+                resp['exp'])+datetime.timedelta(days=1, seconds=0)
+            user = UserData.query.get(resp['id'])
+            new_auth_token = user.encode_auth_token(None, expiration_date)
+            if auth_token:
+                self.disable_token(auth_token)
+                responseObject = {
+                    'status': 'success',
+                    'message': 'Successfully refreshed.',
+                    'auth_token': new_auth_token.decode()
+                }
+                return make_response(jsonify(responseObject)), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Token not valid'
+            }
+            return make_response(jsonify(responseObject)), 400
+
     def post(self, action):
         if action == 'login':
             return self.login()
         elif action == 'logout':
             return self.logout()
+        elif action == 'refresh':
+            return self.refresh()
         else:
             responseObject = {
                 'status': 'fail',

@@ -50,10 +50,13 @@ class UserData(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def encode_auth_token(self, session_days_duration=1):
+    def encode_auth_token(self, session_days_duration=1, expiration_datetime=None):
         try:
+            if expiration_datetime is None:
+                expiration_datetime = datetime.datetime.utcnow(
+                ) + datetime.timedelta(days=session_days_duration, seconds=0)
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=session_days_duration, seconds=0),
+                'exp': expiration_datetime,
                 'iat': datetime.datetime.utcnow(),
                 'id': self.id
             }
@@ -74,6 +77,20 @@ class UserData(db.Model):
                 algorithms=['HS256']
             )
             return payload['id']
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
+
+    @staticmethod
+    def get_payload_token(auth_token):
+        try:
+            payload = jwt.decode(
+                auth_token,
+                os.getenv(JWT_KEY),
+                algorithms=['HS256']
+            )
+            return payload
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
