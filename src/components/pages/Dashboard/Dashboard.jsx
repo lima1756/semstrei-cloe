@@ -23,7 +23,7 @@ export default function Dashboard() {
   };
 
   const otb = () => {
-    axios.get('https://150.136.172.48/api/otb?une=j&submarca=a&categoria=c&mercado=m&current_period=04-OCT-20&breakdown=True',{
+    axios.get('https://150.136.172.48/api/current_period=01-DEC-20&breakdown=False',{
         headers: {
             'Authorization': `Bearer ${isLogged.token}`
           }
