@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Avatar, Button, Checkbox, Grid, IconButton, InputBase, makeStyles, Paper, Table, TableBody, 
+    Avatar, Button, Checkbox, Chip, Grid, IconButton, InputBase, makeStyles, Paper, Table, TableBody,
     TableCell, TableContainer, TablePagination, TableRow, Typography
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
@@ -14,7 +14,7 @@ import axios from 'axios';
 import https from 'https';
 
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false,
+    rejectUnauthorized: false,
 });
 axios.defaults.options = httpsAgent;
 
@@ -47,7 +47,7 @@ function stableSort(array, comparator) {
 const useStyles = makeStyles((theme) => ({
     root: {
         marginLeft: 280,
-        marginTop:70,
+        marginTop: 70,
     },
     paper: {
         width: '95%',
@@ -68,20 +68,22 @@ const useStyles = makeStyles((theme) => ({
     iconButton: {
         padding: 10,
     },
-    selected: { 
+    selected: {
         '&$selected': {
             backgroundColor: "#E7E7E7",
         },
     },
     hover: {
         "&$selected:hover": {
-          backgroundColor: "#F1F1F1",
+            backgroundColor: "#F1F1F1",
         },
-      },
+    },
 }));
 
 export default function EnhancedTable() {
     const classes = useStyles();
+    const [searching, setSearching] = useState(false);
+    const [userSearched, setUserSearched] = useState("");
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState('email');
     const [selected, setSelected] = useState([]);
@@ -94,20 +96,20 @@ export default function EnhancedTable() {
     const { enqueueSnackbar } = useSnackbar();
 
     const getUsers = () => {
-        axios.get('https://150.136.172.48/api/user/all',{
+        axios.get('https://150.136.172.48/api/user/all', {
             headers: {
                 'Authorization': `Bearer ${isLogged.token}`
-              }
+            }
         })
-        .then(function(response){
-          setUsers(response.data.data);
-        }).catch(function(error){
-            handleErrorLoadingUsers('error');
-        })
-      };
-    
-      // eslint-disable-next-line
-      useEffect (() =>{ getUsers() }, []);
+            .then(function (response) {
+                setUsers(response.data.data);
+            }).catch(function (error) {
+                handleErrorLoadingUsers('error');
+            })
+    };
+
+    // eslint-disable-next-line
+    useEffect(() => { getUsers() }, []);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -138,7 +140,7 @@ export default function EnhancedTable() {
             idSelected = idSelected.concat(userId.slice(1));
         } else if (selectedIndex === selected.length - 1) {
             newSelected = newSelected.concat(selected.slice(0, -1));
-            idSelected = idSelected.concat(userId.slice(0,-1));
+            idSelected = idSelected.concat(userId.slice(0, -1));
         } else if (selectedIndex > 0) {
             newSelected = newSelected.concat(
                 selected.slice(0, selectedIndex),
@@ -151,7 +153,7 @@ export default function EnhancedTable() {
         }
 
         setSelected(newSelected);
-        setUserId(idSelected);        
+        setUserId(idSelected);
     };
 
     const handleChangePage = (event, newPage) => {
@@ -165,23 +167,49 @@ export default function EnhancedTable() {
 
     const handleClickOpen = () => {
         setOpen(true);
-      };
-    
-      const handleClose = () => {
+    };
+
+    const handleClose = () => {
         setOpen(false);
         setTimeout(function () {
             getUsers();
         }, 4000);
-      };
+    };
 
-      const handleUsersUpdate = () => {
+    const handleUsersUpdate = () => {
         getUsers();
         setUserId([]);
         setSelected();
-      };
-    
+    };
+
+    const handleUserSearch = () => {
+        setUserSearched(document.getElementById("userSearch").value);
+        seacrhUser(document.getElementById("userSearch").value);
+        setSearching(true);
+        document.getElementById("userSearch").value = "";
+    };
+
+    const seacrhUser = (user) => {
+        axios.get(`https://150.136.172.48/api/user/search/${user}`, {
+            headers: {
+                'Authorization': `Bearer ${isLogged.token}`
+            }
+        })
+            .then(function (response) {
+                setUsers(response.data.data);
+            }).catch(function (error) {
+                console.log(error)
+            })
+    };
+
+    const handleChipDelete = () => {
+        setSearching(false);
+        setUserSearched("");
+        getUsers();
+    };
+
     //-----------------------Snackbar de Error-------------------------
-    const handleErrorLoadingUsers = (variant) => { enqueueSnackbar('Ocurrió un error al cargar los usuarios.', {variant}) };
+    const handleErrorLoadingUsers = (variant) => { enqueueSnackbar('Ocurrió un error al cargar los usuarios.', { variant }) };
 
     const isSelected = (name) => selected.indexOf(name) !== -1;
 
@@ -189,27 +217,37 @@ export default function EnhancedTable() {
 
     return (
         <div className={classes.root}>
-            <Drawer index={1}/>
+            <Drawer index={1} />
             <Grid container style={{ marginBottom: 20 }}>
-                <Grid item xs={6}>
-                    <Paper component="form" className={classes.rootSearch} >
+                <Grid item xs={8}>
+                                            <Paper component="form" className={classes.rootSearch} >
                         <InputBase
                             className={classes.input}
                             placeholder="Buscar Usuario"
                             inputProps={{ 'aria-label': 'search users' }}
+                            id="userSearch"
                         />
-                        <IconButton type="submit" className={classes.iconButton} aria-label="search">
+                        <IconButton className={classes.iconButton} aria-label="search" onClick={handleUserSearch}>
                             <SearchIcon />
                         </IconButton>
+                        {searching ?
+                        <Chip
+                            label={userSearched}
+                            onDelete={handleChipDelete}
+                            className={classes.chip}
+                        />
+                        :
+                        null
+                    }
                     </Paper>
                 </Grid>
-                <Grid item xs={6}>
-                    <Button variant="contained" style={{ position: 'absolute', background:'#000' }} onClick={handleClickOpen}><span style={{color:'#fff'}}>Agregar Usuario</span></Button>
-                    <Dialog open={open} handleClose={handleClose}/> 
+                <Grid item xs={3}>
+                    <Button variant="contained" style={{ position: 'absolute', background: '#000' }} onClick={handleClickOpen}><span style={{ color: '#fff' }}>Agregar Usuario</span></Button>
+                    <Dialog open={open} handleClose={handleClose} />
                 </Grid>
             </Grid>
             <Paper className={classes.paper}>
-                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUserUpdate={handleUsersUpdate}/>
+                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUserUpdate={handleUsersUpdate} />
                 <TableContainer>
                     <Table
                         className={classes.table}
@@ -254,15 +292,15 @@ export default function EnhancedTable() {
                                                 />
                                             </TableCell>
                                             <TableCell component="th" id={labelId} scope="row" padding="none">
-                                                <div style={{textAlign:'center', display:'flex'}}>
+                                                <div style={{ textAlign: 'center', display: 'flex' }}>
                                                     <Avatar alt="Remy Sharp" src={row.image} />
-                                                    <Typography style={{textAlign:'center', verticalAlign:'middle', lineHeight:3, paddingLeft:10}}>{row.name}</Typography>
+                                                    <Typography style={{ textAlign: 'center', verticalAlign: 'middle', lineHeight: 3, paddingLeft: 10 }}>{row.name}</Typography>
                                                 </div>
                                             </TableCell>
                                             <TableCell align="right">{row.email}</TableCell>
                                             <TableCell align="right">{row.role === 0 ? 'Administrador' : row.role === 1 ? 'TI' : 'Finanzas'}</TableCell>
                                             <TableCell align="right">{row.phone_number}</TableCell>
-                                            <TableCell align="right">{row.registration_date.substring(0,17)}</TableCell>
+                                            <TableCell align="right">{row.registration_date.substring(0, 17)}</TableCell>
                                         </TableRow>
                                     );
                                 })}
