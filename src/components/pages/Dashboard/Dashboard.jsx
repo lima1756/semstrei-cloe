@@ -305,6 +305,7 @@ export default function Dashboard() {
                   onChange={handleFilter('une')}
                   value={filterValues.une}
                 >
+                  <MenuItem value=''></MenuItem>
                   {
                     filters.une.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -318,6 +319,7 @@ export default function Dashboard() {
                   onChange={handleFilter('submarca')}
                   value={filterValues.submarca}
                 >
+                  <MenuItem value=''></MenuItem>
                   {
                     filters.submarca.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -331,6 +333,7 @@ export default function Dashboard() {
                   onChange={handleFilter('categoria')}
                   value={filterValues.categoria}
                 >
+                  <MenuItem value=''></MenuItem>
                   {
                     filters.categoria.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -344,6 +347,7 @@ export default function Dashboard() {
                   onChange={handleFilter('mercado')}
                   value={filterValues.mercado}
                 >
+                  <MenuItem value=''></MenuItem>
                   {
                     filters.mercado.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -352,7 +356,11 @@ export default function Dashboard() {
             </Grid>
 
             <Grid item xs={2}>
-              <Button variant="contained" onClick={() => { otb() }}>Filtrar</Button>
+              <Button variant="contained" style={{ background: '#000' }} onClick={() => { otb() }} disabled={
+                filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
+              }>
+                <span style={{ color: '#fff' }}>Filtrar</span>
+              </Button>
             </Grid>
 
           </Grid>
@@ -374,6 +382,9 @@ export default function Dashboard() {
                   />
                 }
                 label="Desglozar"
+                disabled={
+                  filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
+                }
               />
             </Grid>
           </Grid>
@@ -418,7 +429,7 @@ export default function Dashboard() {
             showBreakdown && breakdown &&
             breakdown.map((item, index) => {
               return <div style={{ marginTop: "1.3em" }}>
-                <h3>{item[0].categoria} X {item[0].submarca} X {item[0].une} X {item[0].mercado}</h3>
+                <h3>{item[0].une} X {item[0].submarca} X {item[0].mercado} X {item[0].categoria}</h3>
                 <ReactDataGrid
                   columns={columns}
                   rowGetter={
