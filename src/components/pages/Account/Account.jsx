@@ -125,7 +125,7 @@ export default function MediaControlCard() {
               </Grid>
               <Grid item xs={5}>
                 <CardContent>
-                  <Avatar src='https://picsum.photos/200/300?random=3' className={classes.large} />
+                  <Avatar src='https://i.ibb.co/VgbHhkL/cloe.png' className={classes.large} />
                 </CardContent>
               </Grid>
             </Grid>

@@ -97,7 +97,8 @@ export default function ClippedDrawer() {
         <Toolbar />
         <div className={classes.drawerContainer}>
           <Box className={classes.topPad}>
-            <Avatar alt="Remy Sharp" src='https://picsum.photos/200/300?random=3' className={classes.large} style={{ margin: 'auto' }} />
+            {/* <Avatar alt="Remy Sharp" src='https://picsum.photos/200/300?random=3' className={classes.large} style={{ margin: 'auto' }} /> */}
+            <Avatar alt="Remy Sharp" src='https://i.ibb.co/VgbHhkL/cloe.png' className={classes.large} style={{ margin: 'auto' }} />
             <Typography className={classes.rol}>{user.role === 0 ? 'Administrador' : user.role === 1 ? 'IT' : 'Finanzas'}</Typography>
           </Box>
           <Divider variant='middle' />
@@ -135,7 +136,7 @@ export default function ClippedDrawer() {
                   </ListItemIcon>
                   <ListItemText primary="Graficas" />
                 </ListItem>
-                <ListItem 
+                {/* <ListItem 
                 button 
                 className={classes.nested}
                 selected={selectedIndex === 4}
@@ -145,7 +146,7 @@ export default function ClippedDrawer() {
                     <TableChartRoundedIcon />
                   </ListItemIcon>
                   <ListItemText primary="Tbls. de control" />
-                </ListItem>
+                </ListItem> */}
               </List>
             </Collapse>
             {
