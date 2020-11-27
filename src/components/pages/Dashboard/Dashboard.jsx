@@ -429,7 +429,7 @@ export default function Dashboard() {
             showBreakdown && breakdown &&
             breakdown.map((item, index) => {
               return <div style={{ marginTop: "1.3em" }}>
-                <h3>{item[0].une} X {item[0].submarca} X {item[0].categoria} X {item[0].mercado}</h3>
+                <h3>{item[0].une} - {item[0].submarca} - {item[0].categoria} - {item[0].mercado}</h3>
                 <ReactDataGrid
                   columns={columns}
                   rowGetter={
