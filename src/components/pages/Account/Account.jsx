@@ -35,6 +35,10 @@ const useStyles = makeStyles((theme) => ({
   infoPad: {
     paddingTop: theme.spacing(2),
   },
+  center: {
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  }
 }));
 
 export default function MediaControlCard() {
@@ -78,7 +82,7 @@ export default function MediaControlCard() {
     let mail = document.getElementById('mail').value;
     let phone = document.getElementById('phone').value;
 
-    if( name !== '' || mail !== '' || phone !== ''){
+    if (name !== '' || mail !== '' || phone !== '') {
       updateInfo(name, mail, phone);
     }
     handleClose();
@@ -111,11 +115,11 @@ export default function MediaControlCard() {
                 </CardContent>
                 <Divider variant='middle' style={{ marginTop: 20 }} />
                 <Box className={classes.controls}>
-                <Tooltip title='Editar información' >
-                    <IconButton aria-label="delete" onClick={handleClickOpen}>
-                        <EditRoundedIcon />
+                  <Tooltip title='Editar información' >
+                    <IconButton aria-label="delete" onClick={handleClickOpen} className={classes.center}>
+                      <EditRoundedIcon />
                     </IconButton>
-                </Tooltip>
+                  </Tooltip>
                   <UpdateAccount handleClose={handleClose} handleUpdateClick={handleUpdateClick} open={open} />
                 </Box>
               </Grid>

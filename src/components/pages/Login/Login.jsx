@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { Box, Grid, makeStyles, } from '@material-ui/core';
 import AppBar from '../AppBarDrawer/AppBar';
 import Prueba from '../../../assets/prueba.jpg';
-import { useSnackbar} from 'notistack';
+import { useSnackbar } from 'notistack';
 import { useDispatch } from 'react-redux';
 import { userinformation, signin } from '../../../redux/actions';
 import axios from 'axios';
@@ -47,12 +47,21 @@ export default function Login() {
             handleSuccessLogin('success');
             let status = response.data.status === 'success' ? true : false;
             dispatch(signin(status, response.data.auth_token));
-            dispatch(userinformation(response.data.user.admin,response.data.user.new_user,response.data.user.name,response.data.user.email,response.data.user.phone_number,response.data.user.role,response.data.user.user_id));
+            dispatch(userinformation(response.data.user.admin, response.data.user.new_user, response.data.user.name, response.data.user.email, response.data.user.phone_number, response.data.user.role, response.data.user.user_id));
             history.push('/dashboard/resultTables');
         }).catch(function (error) {
             handleErrorLogin('error');
         })
     };
+
+    const sendRecoverPassword = (email) => {
+        axios.get('https://150.136.172.48/api/recover/request?email=' + email).then(function (response) {
+            handleMailSent('success');
+            setView(!view);
+        }).catch(function (error) {
+            handleMailError('error');
+        })
+    }
 
     const handleView = () => {
         setView(!view);
@@ -63,8 +72,7 @@ export default function Login() {
     };
 
     const handleMailSend = () => {
-        handleMailSent('success');
-        setView(!view);
+        sendRecoverPassword(document.getElementById("recoverMail").value)
     };
 
     const handleLogin = () => {
@@ -77,9 +85,12 @@ export default function Login() {
 
     // ------------------- Snackbar user or password error --------------------------
     const handleErrorLogin = (variant) => { enqueueSnackbar('El usuario o la contraseña son incorrectos.', { variant }) };
-    
+
     // ------------------------------- Snackbar mail sent --------------------------------
     const handleMailSent = (variant) => { enqueueSnackbar('El correo ha sido enviado.', { variant }) };
+
+    // ------------------------------- Snackbar mail error --------------------------------
+    const handleMailError = (variant) => { enqueueSnackbar('Error al enviar el corrreo, intente de nuevo.', { variant }) };
 
     return (
         <div>
@@ -97,11 +108,11 @@ export default function Login() {
                         {
                             view ?
                                 <>
-                                    <LoginForm handleView={handleView} handleLogin={handleLogin} handleChange={handleChange} state={state}/>
+                                    <LoginForm handleView={handleView} handleLogin={handleLogin} handleChange={handleChange} state={state} />
                                 </>
                                 :
                                 <>
-                                    <RecoverPassword handleMailSend={handleMailSend}/>
+                                    <RecoverPassword handleMailSend={handleMailSend} />
                                 </>
                         }
                     </Box>

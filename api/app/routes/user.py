@@ -3,6 +3,7 @@ import jwt
 from flask import Blueprint, request, make_response, jsonify, render_template
 from flask.views import MethodView
 from flask_mail import Message
+from fuzzywuzzy import fuzz
 
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
@@ -39,22 +40,81 @@ class UserAPI(MethodView):
         id = self.obtain_user_id_from_token()
         return self.get_user(id)
 
+    @admin_required
+    def search_user(self, search):
+        users = UserData.query.all()
+        output = []
+        for user in users:
+            print(user.email)
+            print(fuzz.token_set_ratio(user.email, search))
+            print(user.name)
+            print(fuzz.token_set_ratio(user.name, search))
+            print(user.phone_number)
+            print(fuzz.token_set_ratio(user.phone_number, search))
+            if fuzz.token_set_ratio(user.email, search) > 60 or fuzz.token_set_ratio(user.name, search) > 60 or fuzz.token_set_ratio(user.phone_number, search) > 60:
+                output.append(user.get_data_as_dict())
+        responseObject = {
+            'status': 'success',
+            'data': output
+        }
+        return make_response(jsonify(responseObject)), 200
+
     def switch_status(self, id, status=None):
         user = UserData.query.get(id)
         if user:
             user.enabled = (not user.enabled) if status is None else status
             db.session.add(user)
+        else:
+            raise IndexError("user with id "+str(id)+" not found")
+
+    @admin_required
+    def switch_multiple_status(self, status):
+        try:
+            data = request.get_json()
+            users = data.get('users')
+            count = 0
+            if users is not None:
+                for id in users:
+                    try:
+                        self.switch_status(id, status)
+                        count += 1
+                    except IndexError as e:
+                        pass
             db.session.commit()
             responseObject = {
                 'status': 'success',
+                'updated': count
             }
             return make_response(jsonify(responseObject)), 201
-        else:
+        except:
+            responseObject = {
+                'status': 'fail',
+                'message': 'There was a problem, please try again'
+            }
+            return make_response(jsonify(responseObject)), 500
+
+    @admin_required
+    def switch_single_status(self, id, status=None):
+        try:
+            self.switch_status(id, status)
+            db.session.commit()
+            responseObject = {
+                'status': 'success',
+                'updated': 1
+            }
+            return make_response(jsonify(responseObject)), 201
+        except IndexError:
             responseObject = {
                 'status': 'fail',
                 'message': 'User doesn\'t exist'
             }
             return make_response(jsonify(responseObject)), 404
+        except:
+            responseObject = {
+                'status': 'fail',
+                'message': 'There was a problem, please try again'
+            }
+            return make_response(jsonify(responseObject)), 500
 
     @admin_required
     def get_specific_user(self, id):
@@ -193,32 +253,33 @@ class UserAPI(MethodView):
             return make_response(jsonify(responseObject)), 409
 
     @login_required
-    def get(self, id):
+    def get(self, id, search):
         if id is None:
             return self.get_self_user()
         elif id == 'all':
             return self.get_all_users()
+        elif id == 'search':
+            return self.search_user(search)
         else:
             return self.get_specific_user(id)
 
     @login_required
-    def put(self, id=None, action=None):
-        if action is None:
-            if id is None:
+    def put(self, action_or_id=None, id=None):
+        if action_or_id == 'enable':
+            if id is not None:
+                return self.switch_single_status(id, True)
+            else:
+                return self.switch_multiple_status(True)
+        elif action_or_id == 'disable':
+            if id is not None:
+                return self.switch_single_status(id, False)
+            else:
+                return self.switch_multiple_status(False)
+        else:
+            if action_or_id is None:
                 return self.update_user(self.obtain_user_id_from_token())
             else:
-                return self.update_user_admin(id)
-        else:
-            if action == 'enable':
-                return self.switch_status(id, True)
-            elif action == 'disable':
-                return self.switch_status(id, False)
-            else:
-                responseObject = {
-                    'status': 'fail',
-                    'message': 'page not found'
-                }
-                return make_response(jsonify(responseObject)), 404
+                return self.update_user_admin(action_or_id)
 
     def delete_user(self, id):
         user = UserData.query.get(id)
@@ -266,14 +327,36 @@ user_api = UserAPI.as_view('user_api')
 # add Rules for API Endpoints
 user_blueprint.add_url_rule(
     '/user',
-    defaults={'id': None},
+    defaults={'id': None, 'search': None},
     view_func=user_api,
-    methods=['GET', 'DELETE']
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>',
+    defaults={'search': None},
+    view_func=user_api,
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>/<search>',
+    view_func=user_api,
+    methods=['GET']
 )
 user_blueprint.add_url_rule(
     '/user/<id>',
     view_func=user_api,
-    methods=['GET', 'POST', 'DELETE', 'PUT']
+    methods=['GET']
+)
+user_blueprint.add_url_rule(
+    '/user',
+    defaults={'id': None},
+    view_func=user_api,
+    methods=['DELETE']
+)
+user_blueprint.add_url_rule(
+    '/user/<id>',
+    view_func=user_api,
+    methods=['DELETE']
 )
 user_blueprint.add_url_rule(
     '/user',
@@ -282,18 +365,18 @@ user_blueprint.add_url_rule(
 )
 user_blueprint.add_url_rule(
     '/user',
-    defaults={'id': None, 'action': None},
+    defaults={'action_or_id': None, 'id': None},
     view_func=user_api,
     methods=['PUT']
 )
 user_blueprint.add_url_rule(
-    '/user/<id>',
-    defaults={'action': None},
+    '/user/<action_or_id>',
+    defaults={'id': None},
     view_func=user_api,
     methods=['PUT']
 )
 user_blueprint.add_url_rule(
-    '/user/<id>/<action>',
+    '/user/<action_or_id>/<id>',
     view_func=user_api,
     methods=['PUT']
 )
