@@ -9,15 +9,14 @@
 │   ├── .env                # IMPORTANTE: archivo no incluido ver mas adelante para instrucciones de configuracion
 │   ├── requirements.txt    # Lista de dependencias del proyecto (actualizar con "pip freeze > requirements.txt")
 │   ├── app                 # Codigo fuente back-end
-|   |   ├── __init__.py     # Configuracion servidor Flask    
-|   |   ├── config.py       # Archivo configuracion del proyecto   
-|   |   ├── models.py       # Modelos en BDD    
-|   |   ├── middleware      # carpetas con funciones middleware para los request  
-|   |   ├── decorators      # carpetas con decoradores para funciones de todo el proyect
-|   |   └── routes          # Carpeta de rutas
-|   └── tests               # Carpeta con archivos de pruebas unitarias
-|   
-|
+│   │   ├── __init__.py     # Configuracion servidor Flask    
+│   │   ├── config.py       # Archivo configuracion del proyecto   
+│   │   ├── models          # Modelos en BDD    
+│   │   ├── middleware      # carpetas con funciones middleware para los request  
+│   │   ├── libs            # carpetas con funcionalidades extra necesarias para el funcionamiento del proyecto
+│   │   └── routes          # Carpeta de rutas
+│   └── tests               # Carpeta con archivos de pruebas unitarias
+│   
 ├── node_modules            # Librerias React
 ├── package.json            # Manejador proyecto npm
 ├── package-lock.json
@@ -30,8 +29,10 @@
 │   └── robots.txt
 ├── README.md               # El archivo que se esta leyendo
 └── src                     # Codigo fuente react
-    ├── App.css
-    ├── App.js
+    ├── assets              # archivos estaticos requeridos por react
+    ├── components          # Todos los componentes del front-end
+    ├── redux               # logica para el manejo de informacion en el front-end
+    ├── App.js              # Punto de entrada para la aplicacion de React
     ├── App.test.js
     ├── index.css
     ├── index.js
@@ -94,6 +95,7 @@ en el arbol de directorios en la parte inicial de este README).
 Una vez creado el archivo solo es necesario establecer las variables dentro del
 mismo:
 ```
+JWT_KEY={Clave secreta usada para la encriptacion de JWT}
 LD_LIBRARY_PATH={Directorio de intalacion de oracle instant client}
 DATABASE_ORACLE_USER={usuario de la base de datos oracle}
 DATABASE_ORACLE_PASSWORD={contraseña del usuario de la bdd}
@@ -165,7 +167,7 @@ Después de esto solo es necesario establecer la variable del ambiente
 
 ```export LD_LIBRARY_PATH=/home/ubuntu/instantclient```
 
-IMPORTANTE: Es necesario agregar la variable manualmente como se indica
+*__IMPORTANTE__*: Es necesario agregar la variable manualmente como se indica
  a demás de en el .env
 
 ### Intalar paquetes
