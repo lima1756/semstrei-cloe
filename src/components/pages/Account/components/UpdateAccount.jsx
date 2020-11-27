@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function UpdateAccount({ handleClose, handleUpdateClick, open }) {
+export default function UpdateAccount({ handleClose, handleUpdateClick, open, user }) {
     const classes = useStyles();
 
     return (
@@ -31,9 +31,9 @@ export default function UpdateAccount({ handleClose, handleUpdateClick, open }) 
                                 Actualiza tus Datos
                             </Typography>
                             <form noValidate autoComplete="off">
-                                <TextField className={classes.textfieldSize} id="name" label="Nombre" />
-                                <TextField className={classes.textfieldSize} id="mail" label="Correo" />
-                                <TextField className={classes.textfieldSize} id="phone" label="Telefono" />
+                                <TextField className={classes.textfieldSize} id="name" label="Nombre" defaultValue={user.name} />
+                                <TextField className={classes.textfieldSize} id="mail" label="Correo" defaultValue={user.mail} />
+                                <TextField className={classes.textfieldSize} id="phone" label="Telefono" defaultValue={user.phone} />
                             </form>
                             <Box className={classes.controlsAccount}>
                                 <Button

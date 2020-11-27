@@ -68,9 +68,6 @@ export default function MediaControlCard() {
       }
     }).then(function (response) {
       dispatch(userinformation(user.admin, user.newUser, name === '' ? user.name : name, mail === '' ? user.mail : mail, phone === '' ? user.phone : phone, user.role, user.userId));
-      document.getElementById('name').value = null;
-      document.getElementById('mail').value = null;
-      document.getElementById('phone').value = null;
       handleSuccessUpdate('success');
     }).catch(function (error) {
       handleErrorUpdate('error');
@@ -120,7 +117,7 @@ export default function MediaControlCard() {
                       <EditRoundedIcon />
                     </IconButton>
                   </Tooltip>
-                  <UpdateAccount handleClose={handleClose} handleUpdateClick={handleUpdateClick} open={open} />
+                  <UpdateAccount handleClose={handleClose} handleUpdateClick={handleUpdateClick} open={open} user={user} />
                 </Box>
               </Grid>
               <Grid item xs={5}>
