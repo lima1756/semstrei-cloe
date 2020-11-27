@@ -95,7 +95,7 @@ export default function Graphs() {
     const options = {
         title: {
             display: true,
-            text: 'Comparación Une',
+            text: 'OTB por UNE: Bolso',
         },
         scales: {
             yAxes: [
@@ -113,7 +113,7 @@ export default function Graphs() {
     const options2 = {
         title: {
             display: true,
-            text: 'Comparación Submarca',
+            text: 'OTB por UNE: Calzado',
         },
         scales: {
             yAxes: [
@@ -131,7 +131,7 @@ export default function Graphs() {
     const options3 = {
         title: {
             display: true,
-            text: 'Comparación Categoria',
+            text: 'OTB por UNE: Billetera',
         },
         scales: {
             yAxes: [
@@ -149,7 +149,7 @@ export default function Graphs() {
     const options4 = {
         title: {
             display: true,
-            text: 'Comparación mercado',
+            text: 'OTB por UNE: Pañalera',
         },
         scales: {
             yAxes: [
