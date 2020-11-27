@@ -370,6 +370,7 @@ export default function Dashboard() {
                     checked={showBreakdown}
                     onChange={(event) => { setBackdrop(true); setTimeout(() => { setShowBreakdown(!showBreakdown) }, 250); }}
                     name="Desglozar"
+                    color="default"
                   />
                 }
                 label="Desglozar"
