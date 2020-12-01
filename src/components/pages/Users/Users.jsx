@@ -5,6 +5,7 @@ import {
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import Dialog from './NewUser';
+import UpdateUserDialog from './components/UpdateUser';
 import Drawer from '../AppBarDrawer/Drawer';
 import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
@@ -92,6 +93,7 @@ export default function EnhancedTable() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [open, setOpen] = useState(false);
     const [users, setUsers] = useState([]);
+    const [updateUser, setUpdateUser] = useState(false);
     const isLogged = useSelector(state => state.logged);
     const { enqueueSnackbar } = useSnackbar();
 
@@ -179,7 +181,7 @@ export default function EnhancedTable() {
     const handleUsersUpdate = () => {
         getUsers();
         setUserId([]);
-        setSelected();
+        setSelected([]);
     };
 
     const handleUserSearch = () => {
@@ -208,6 +210,18 @@ export default function EnhancedTable() {
         getUsers();
     };
 
+    const getSingleSelectedUser = () => {
+        if (userId.length !== 1) {
+            return null
+        }
+        for (let i = 0; i < users.length; i++) {
+            if (users[i].user_id === userId[0]) {
+                return users[i]
+            }
+        }
+        return null;
+    }
+    const singleSelectedUser = getSingleSelectedUser()
     //-----------------------Snackbar de Error-------------------------
     const handleErrorLoadingUsers = (variant) => { enqueueSnackbar('Ocurrió un error al cargar los usuarios.', { variant }) };
 
@@ -220,7 +234,7 @@ export default function EnhancedTable() {
             <Drawer index={1} />
             <Grid container style={{ marginBottom: 20 }}>
                 <Grid item xs={8}>
-                                            <Paper component="form" className={classes.rootSearch} >
+                    <Paper component="form" className={classes.rootSearch} >
                         <InputBase
                             className={classes.input}
                             placeholder="Buscar Usuario"
@@ -231,14 +245,14 @@ export default function EnhancedTable() {
                             <SearchIcon />
                         </IconButton>
                         {searching ?
-                        <Chip
-                            label={userSearched}
-                            onDelete={handleChipDelete}
-                            className={classes.chip}
-                        />
-                        :
-                        null
-                    }
+                            <Chip
+                                label={userSearched}
+                                onDelete={handleChipDelete}
+                                className={classes.chip}
+                            />
+                            :
+                            null
+                        }
                     </Paper>
                 </Grid>
                 <Grid item xs={3}>
@@ -247,7 +261,7 @@ export default function EnhancedTable() {
                 </Grid>
             </Grid>
             <Paper className={classes.paper}>
-                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUserUpdate={handleUsersUpdate} />
+                <TableHeadToolbar numSelected={selected.length} style={{ marginTop: 45 }} usersId={userId} handleUserUpdate={handleUsersUpdate} updateUserDialog={() => { setUpdateUser(true) }} />
                 <TableContainer>
                     <Table
                         className={classes.table}
@@ -300,6 +314,7 @@ export default function EnhancedTable() {
                                             <TableCell align="right">{row.email}</TableCell>
                                             <TableCell align="right">{row.role === 0 ? 'Administrador' : row.role === 1 ? 'TI' : 'Finanzas'}</TableCell>
                                             <TableCell align="right">{row.phone_number}</TableCell>
+                                            <TableCell align="right">{row.enabled ? 'Habilitado' : 'Deshabilitado'}</TableCell>
                                             <TableCell align="right">{row.registration_date.substring(0, 17)}</TableCell>
                                         </TableRow>
                                     );
@@ -322,6 +337,11 @@ export default function EnhancedTable() {
                     onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Paper>
+            <UpdateUserDialog user={singleSelectedUser} open={updateUser} handleClose={() => {
+                setTimeout(function () {
+                    handleUsersUpdate();
+                }, 4000); setUpdateUser(false)
+            }} />
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Drawer from '../AppBarDrawer/Drawer'
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField, MenuItem, Select, FormControlLabel, Checkbox } from '@material-ui/core';
@@ -68,19 +68,19 @@ export default function Dashboard() {
   const otb = () => {
     setBackdrop(true)
     let url = 'https://150.136.172.48/api/otb?current_period=01-DEC-20&breakdown=True'
-    if (filterValues.categoria != '') {
+    if (filterValues.categoria !== '') {
       url += "&categoria=" + filterValues.categoria
     }
-    if (filterValues.mercado != '') {
+    if (filterValues.mercado !== '') {
       url += "&mercado=" + filterValues.mercado
     }
-    if (filterValues.periodo != '') {
+    if (filterValues.periodo !== '') {
       url += "&periodo=" + filterValues.periodo
     }
-    if (filterValues.submarca != '') {
+    if (filterValues.submarca !== '') {
       url += "&submarca=" + filterValues.submarca
     }
-    if (filterValues.une != '') {
+    if (filterValues.une !== '') {
       url += "&une=" + filterValues.une
     }
     axios.get(url, {
@@ -357,7 +357,7 @@ export default function Dashboard() {
 
             <Grid item xs={2}>
               <Button variant="contained" style={{ background: '#000' }} onClick={() => { otb() }} disabled={
-                filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
+                filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === ""
               }>
                 <span style={{ color: '#fff' }}>Filtrar</span>
               </Button>
@@ -383,7 +383,7 @@ export default function Dashboard() {
                 }
                 label="Desglozar"
                 disabled={
-                  filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
+                  filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === ""
                 }
               />
             </Grid>

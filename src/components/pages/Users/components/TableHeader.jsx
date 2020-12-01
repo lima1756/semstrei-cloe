@@ -22,6 +22,7 @@ const headCells = [
     { id: 'email', numeric: true, disablePadding: false, label: 'Email' },
     { id: 'role', numeric: true, disablePadding: false, label: 'Rol' },
     { id: 'phone', numeric: true, disablePadding: false, label: 'Phone' },
+    { id: 'enabled', numeric: true, disablePadding: false, label: 'Estado' },
     { id: 'registration', numeric: true, disablePadding: false, label: 'Registration date' },
 ];
 
