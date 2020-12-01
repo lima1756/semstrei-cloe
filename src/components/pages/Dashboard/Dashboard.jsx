@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Drawer from '../AppBarDrawer/Drawer'
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField, MenuItem, Select, FormControlLabel, Checkbox } from '@material-ui/core';
+import {
+  Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField,
+  MenuItem, Select, FormControlLabel, Checkbox, Tooltip
+} from '@material-ui/core';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ReactDataGrid from "react-data-grid";
@@ -65,9 +68,10 @@ export default function Dashboard() {
     setValue(event.target.value);
   };
 
-  const otb = () => {
+  const otb = (periodo) => {
     setBackdrop(true)
-    let url = 'https://150.136.172.48/api/otb?current_period=01-DEC-20&breakdown=True'
+    let url = 'https://150.136.172.48/api/otb?breakdown=' + (showBreakdown ? "True" : "false") +
+      '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
     if (filterValues.categoria !== '') {
       url += "&categoria=" + filterValues.categoria
     }
@@ -98,7 +102,7 @@ export default function Dashboard() {
       })
   };
 
-  const getFilters = () => {
+  const getFilters = (callback) => {
     axios.get('https://150.136.172.48/api/otb/filters', {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
@@ -107,15 +111,22 @@ export default function Dashboard() {
       .then(function (response) {
         setFilters(response.data.filters);
         setFilterValues({ ...filterValues, 'periodo': response.data.filters.periodo[0] })
-
+        if (callback) {
+          callback(response.data.filters.periodo[0])
+        }
       }).catch(function (error) {
       })
   }
 
   useEffect(() => {
-    otb();
-    getFilters();
+    setBackdrop(true)
+    getFilters((periodo) => { otb(periodo) });
   }, []);
+
+  useEffect(() => {
+    setBackdrop(true)
+    otb()
+  }, [showBreakdown])
 
   const columns = [
     {
@@ -372,20 +383,24 @@ export default function Dashboard() {
               </IconButton>
             </Grid>
             <Grid item xs={4} style={{ textAlign: 'left' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showBreakdown}
-                    onChange={(event) => { setBackdrop(true); setTimeout(() => { setShowBreakdown(!showBreakdown) }, 250); }}
-                    name="Desglozar"
-                    color="default"
-                  />
-                }
-                label="Desglozar"
-                disabled={
-                  filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === ""
-                }
-              />
+
+              <Tooltip classes={{ tooltip: classes.customWidth }} title={(filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === "" && !showBreakdown) ? "Esta accion tomara un tiempo en cargar, porfavor seleccione por lo menos un filtro si desea algo especifico." : ""} arrow>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showBreakdown}
+                      onChange={(event) => { setBackdrop(true); setTimeout(() => { setShowBreakdown(!showBreakdown) }, 250); }}
+                      name="Desglozar"
+                      color="default"
+                    />
+                  }
+                  label="Desglozar"
+                />
+              </Tooltip>
+
+
+
+
             </Grid>
           </Grid>
           <Dialog
