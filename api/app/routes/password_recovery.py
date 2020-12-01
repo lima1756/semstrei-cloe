@@ -60,6 +60,12 @@ class RecoverPassword(MethodView):
                 key=request.args.get('token')
             ).first()
             if token:
+                if token.used:
+                    responseObject = {
+                        'status': 'fail',
+                        'message': 'Link already used, please request a new one.'
+                    }
+                    return make_response(jsonify(responseObject)), 401
                 RecoveryTokens.validate_key(token.key)
                 responseObject = {
                     'status': 'success'
