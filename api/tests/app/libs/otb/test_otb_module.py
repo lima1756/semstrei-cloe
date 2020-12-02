@@ -24,6 +24,8 @@ class TestSuperVector(unittest.TestCase):
             "Kids Data", [self._dimension_11, self._dimension_12, self._dimension_13])
         self._header_4 = Header(
             "Control 4 dim", [self._dimension_11, self._dimension_12, self._dimension_13, self._dimension_14])
+        self._header_5 = Header(
+            "Control 5 dim", [self._dimension_11, self._dimension_12, self._dimension_14])
 
         self._super_vector_1 = SuperVector(
             self._header_1, np.arange(12).reshape(3, 4))
@@ -42,14 +44,20 @@ class TestSuperVector(unittest.TestCase):
               [.3, .3], [1., 2.]],
              [[2., 4.], [4., 12.],
               [.7, .7], [1., 3.]]]))
+        self._super_vector_7 = SuperVector(self._header_5, np.array(
+            [[[0., 1.], [1., 3.],
+              [.5, .5], [1., 1.]],
+             [[1., 2.], [2., 6.],
+              [.3, .3], [1., 2.]],
+             [[2., 4.], [4., 12.],
+              [.7, .7], [1., 3.]]]))
 
     def test_join_super_vector_with_category(self):
         sv_con_extra_dim = otb_functions.join_super_vector_with_category(
-            self._super_vector_5, self._super_vector_6)
+            self._super_vector_5, self._super_vector_7, use_3rd_dim_for_join=False)
         new_header = Header(
             "", [self._dimension_11, self._dimension_12, self._dimension_13, self._dimension_14])
         self.assertEqual(new_header, sv_con_extra_dim.get_header())
-        print(sv_con_extra_dim.get_data())
         npt.assert_almost_equal(sv_con_extra_dim.get_data(), [[[[0.,   0.],
                                                                 [0., 1.],
                                                                 [0., 2.]],
@@ -120,7 +128,7 @@ class TestSuperVector(unittest.TestCase):
     def test_get_absolute_otb(self):
         shape = self._super_vector_1.get_data().shape
         sv_test_percentage_otb = otb_functions.get_absolute_otb(
-            self._super_vector_1, self._super_vector_2)
+            self._super_vector_2, self._super_vector_1)
         self.assertEqual(sv_test_percentage_otb.get_header(),
                          self._super_vector_2.get_header())
         npt.assert_almost_equal(
@@ -163,7 +171,7 @@ class TestSuperVector(unittest.TestCase):
         mercado_dimension = Dimension("Mercado", ["M1", "M2"])
         categoria_dimension = Dimension("Categoria", ["Basico", "Moda"])
         tumc = [time_dimension, une_dimension, mercado_dimension, categoria_dimension]
-        tuc = [time_dimension, une_dimension, categoria_dimension]
+        tuc = [time_dimension, une_dimension,categoria_dimension]
         umc = tumc[1:]
         tum = [time_dimension, une_dimension, mercado_dimension]
         tu = [time_dimension, une_dimension]
@@ -203,7 +211,8 @@ class TestSuperVector(unittest.TestCase):
         # pdb.set_trace()
         otb_output = otb_functions.calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras,
                                                  sv_devoluciones_general, sv_plan_ventas_general,
-                                                 sv_rate_control_moda_basico, time_dimension, 1.5)
+                                                 sv_rate_control_moda_basico, time_dimension, 1.5,
+                                                 use_submarca_for_real_cases=False)
         sv_stock_inicial = otb_output[0]
         sv_inventario_piso = otb_output[1]
         sv_compras = otb_output[2]

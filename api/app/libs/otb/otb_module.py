@@ -1,9 +1,11 @@
 import numpy as np
 from app.libs.otb.super_vector import SuperVector, Header, Dimension
 from copy import deepcopy
+import pdb
 
 
-def join_super_vector_with_category(sv, sv_rate_control_category, use_control_on_both_mercados=True):
+def join_super_vector_with_category(sv, sv_rate_control_category, use_control_on_both_mercados=True,
+                                    use_3rd_dim_for_join=True):
     """
     Dado dos Supervectores:
         SV1(A, B, ... T,U,S . . .,C,D . . .)  --- Con distintas dimensiones, conteniendo las dimensiones T,U,S
@@ -19,10 +21,12 @@ def join_super_vector_with_category(sv, sv_rate_control_category, use_control_on
         sv_rate_control_category.get_dimensions()[0])
     index_join_dimension_2_on_sv = sv.get_index_dimension(
         sv_rate_control_category.get_dimensions()[1])
-    index_join_dimension_3_on_sv = sv.get_index_dimension(
-        sv_rate_control_category.get_dimensions()[2])
-    if index_join_dimension_1_on_sv is None or index_join_dimension_2_on_sv is None \
-            or index_join_dimension_3_on_sv is None:
+    if use_3rd_dim_for_join:
+        index_join_dimension_3_on_sv = sv.get_index_dimension(
+            sv_rate_control_category.get_dimensions()[2])
+        if index_join_dimension_3_on_sv is None:
+            raise Exception("Vectors doesn't share common Dimension for joining.")
+    if index_join_dimension_1_on_sv is None or index_join_dimension_2_on_sv is None :
         raise Exception("Vectors doesn't share common Dimension for joining.")
 
     # Get Old Shapes
@@ -45,9 +49,10 @@ def join_super_vector_with_category(sv, sv_rate_control_category, use_control_on
     reshape_control_for_multiplication = reshape_control_for_multiplication[:index_join_dimension_2_on_sv] \
         + (control_shape[1],) \
         + reshape_control_for_multiplication[index_join_dimension_2_on_sv + 1:]
-    reshape_control_for_multiplication = reshape_control_for_multiplication[:index_join_dimension_3_on_sv] \
-        + (control_shape[2],) \
-        + reshape_control_for_multiplication[index_join_dimension_3_on_sv + 1:]
+    if use_3rd_dim_for_join:
+        reshape_control_for_multiplication = reshape_control_for_multiplication[:index_join_dimension_3_on_sv] \
+            + (control_shape[2],) \
+            + reshape_control_for_multiplication[index_join_dimension_3_on_sv + 1:]
     reshape_control_for_multiplication = reshape_control_for_multiplication + (control_shape[-1],)
     control = sv_rate_control_category.get_data().reshape(
         reshape_control_for_multiplication)
@@ -228,7 +233,8 @@ def get_data_projection_eom_stock_for_period(sv_initial_stock, sv_inventario_pis
 
 # TODOC
 def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones_general,
-                  sv_plan_ventas_general, sv_rate_control_m1_moda_basico, time_dimension, increment_stock_factor):
+                  sv_plan_ventas_general, sv_rate_control_m1_moda_basico, time_dimension,
+                  increment_stock_factor, use_submarca_for_real_cases=True):
     """
     calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devoluciones_general,
                   sv_plan_ventas_general, sv_rate_control_m1_moda_basico, time_dimension) :
@@ -259,11 +265,12 @@ def calculate_otb(sv_stock_inicial, sv_inventario_piso, sv_compras, sv_devolucio
     sv_devoluciones_general = consider_devolutions_as_m2(sv_devoluciones_general, mercado_dimension)
     # Get devolution by category ( Basico / Moda ) given the control table by season. TUSMC
     sv_devoluciones = join_super_vector_with_category(
-        sv_devoluciones_general, sv_rate_control_m1_moda_basico)
+        sv_devoluciones_general, sv_rate_control_m1_moda_basico, use_3rd_dim_for_join=use_submarca_for_real_cases)
 
     # Get target_venta by category (Moda/Basico) given the control table by season.
     sv_target_venta = join_super_vector_with_category(
-        sv_plan_ventas_general, sv_rate_control_m1_moda_basico, False)
+        sv_plan_ventas_general, sv_rate_control_m1_moda_basico, use_control_on_both_mercados=False,
+        use_3rd_dim_for_join=use_submarca_for_real_cases)
 
     # pdb.set_trace()
     sv_target_stock = get_target_stock(sv_target_venta, increment_stock_factor)
