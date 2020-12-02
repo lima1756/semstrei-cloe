@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [breakdown, setBreakdown] = useState([]);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [inventory, setInventory] = useState();
+  const [periodSize, setPeriodSize] = useState("");
   const [filterValues, setFilterValues] = useState({
     'categoria': '', 'mercado': '', 'periodo': '', 'submarca': '', 'une': ''
   })
@@ -96,6 +97,7 @@ export default function Dashboard() {
         setData(response.data.table);
         setBreakdown(response.data.breakdown);
         setInventory(response.data.table[0].initialStock);
+        setPeriodSize(response.data.table[0].period_length);
         setBackdrop(false)
       }).catch(function (error) {
         setBackdrop(false)
@@ -130,22 +132,6 @@ export default function Dashboard() {
 
   const columns = [
     {
-      key: 'startDateCurrentPeriodOTB',
-      name: 'Periodo',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-    },
-    {
-      key: 'period_length',
-      name: 'Tamaño del periodo',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-    },
-    {
       key: 'startDateProjectionPeriodOTB',
       name: 'Periodo de Proyeccion',
       resizable: true,
@@ -163,26 +149,44 @@ export default function Dashboard() {
       formatter: CellValue
     },
     {
-      key: 'purchases',
-      name: 'Compras',
+      key: 'inventoryOnStores',
+      name: 'Inventario PISO',
       resizable: true,
       sortable: false,
       filterable: false,
-      editable: false,
-      formatter: CellValue
-    },
-    {
-      key: 'devolution',
-      name: 'Devoluciones',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
+      editable: true,
       formatter: CellValue
     },
     {
       key: 'targetSells',
-      name: 'Ventas esperadas',
+      name: 'Tgt Venta Precio Lista',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'devolution',
+      name: 'Tgt Devolucion',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'purchases',
+      name: 'Compra',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'projectionEomStock',
+      name: 'Proyección Stock EOM',
       resizable: true,
       sortable: false,
       filterable: false,
@@ -191,20 +195,11 @@ export default function Dashboard() {
     },
     {
       key: 'targetStock',
-      name: 'Stock esperado',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-      formatter: CellValue
-    },
-    {
-      key: 'projectionEomStock',
       name: 'Tgt Stock EOM',
       resizable: true,
       sortable: false,
       filterable: false,
-      editable: false,
+      editable: true,
       formatter: CellValue
     },
     {
@@ -228,13 +223,14 @@ export default function Dashboard() {
   ];
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
-    this.setState(state => {
-      const rows = rows.slice();
-      for (let i = fromRow; i <= toRow; i++) {
-        rows[i] = { ...rows[i], ...updated };
-      }
-      return { rows };
-    });
+    console.log(updated)
+    let jsonDataTable = JSON.parse(JSON.stringify(data))
+    for (let i = fromRow; i <= toRow; i++) {
+      Object.keys(updated).forEach((key) => {
+        jsonDataTable[i][key] = parseInt(updated[key])
+      })
+    }
+    fastOTB(jsonDataTable)
   };
 
   const handleFilter = (filter) => {
@@ -247,16 +243,19 @@ export default function Dashboard() {
 
   const handleChangeStock = () => {
     const new_data = parseInt(document.getElementById("changingStock").value)
+    let jsonDataTable = JSON.parse(JSON.stringify(data))
     setInventory(new_data)
-    fastOTB(new_data)
+    fastOTB(jsonDataTable, new_data)
     setOpen(false);
   };
 
-  const fastOTB = (startStock) => {
+  const fastOTB = (jsonDataTable, startStock) => {
     // This function calculates the OTB for just one given table of the OTB
     //Inputs:
     // jsonDataTable: Json with the data of the OTB table to calculate.
-    let jsonDataTable = JSON.parse(JSON.stringify(data))
+    if (startStock == null) {
+      startStock = inventory;
+    }
     let stock_inicial, inventario_piso, target_venta, devolucion, compras, proyeccion_stock_eom, target_stock_eom, otb_minus_ctb, percentage_otb;
     for (let t = 0; t < jsonDataTable.length; t++) {
       if (t === 0) {
@@ -377,13 +376,16 @@ export default function Dashboard() {
           </Grid>
           <Grid container>
             <Grid item xs={4} style={{ textAlign: 'left' }}>
+              <p>Tamaño de los periodos pre-calculados: <b>{periodSize}</b></p>
+            </Grid>
+            <Grid item xs={4} style={{ textAlign: 'left' }}>
               Inventario inicial: <b>{inventory}</b>
               <IconButton aria-label="delete" onClick={handleClickOpen}>
                 <EditRoundedIcon />
               </IconButton>
             </Grid>
-            <Grid item xs={4} style={{ textAlign: 'left' }}>
-
+            <Grid item xs={2}/>
+            <Grid item xs={2} style={{ marginLeft:"auto", marginRight:"auto" }}>
               <Tooltip classes={{ tooltip: classes.customWidth }} title={(filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === "" && !showBreakdown) ? "Esta accion tomara un tiempo en cargar, porfavor seleccione por lo menos un filtro si desea algo especifico." : ""} arrow>
                 <FormControlLabel
                   control={
@@ -397,10 +399,6 @@ export default function Dashboard() {
                   label="Desglozar"
                 />
               </Tooltip>
-
-
-
-
             </Grid>
           </Grid>
           <Dialog
