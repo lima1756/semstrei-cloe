@@ -27,7 +27,7 @@ function App() {
             <ProtectedRoute path='/account' Component={Account} />
             <Route path='/login' component={Login} />
             <Route exact path='/' component={EntryPoint} />
-            <Route path={`/resetPassword/:id`} component={PasswordReset} />
+            <Route path={`/resetPassword/:code`} component={PasswordReset} />
             {/* <Route path='*' component={() => '404 NOT FOUND'}/> */}
           </Switch>
         </Router>

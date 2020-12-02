@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Drawer from '../AppBarDrawer/Drawer'
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField, MenuItem, Select, FormControlLabel, Checkbox } from '@material-ui/core';
+import {
+  Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField,
+  MenuItem, Select, FormControlLabel, Checkbox, Tooltip
+} from '@material-ui/core';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ReactDataGrid from "react-data-grid";
@@ -40,6 +43,7 @@ export default function Dashboard() {
   const [breakdown, setBreakdown] = useState([]);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [inventory, setInventory] = useState();
+  const [periodSize, setPeriodSize] = useState("");
   const [filterValues, setFilterValues] = useState({
     'categoria': '', 'mercado': '', 'periodo': '', 'submarca': '', 'une': ''
   })
@@ -65,22 +69,23 @@ export default function Dashboard() {
     setValue(event.target.value);
   };
 
-  const otb = () => {
+  const otb = (periodo) => {
     setBackdrop(true)
-    let url = 'https://150.136.172.48/api/otb?current_period=01-DEC-20&breakdown=True'
-    if (filterValues.categoria != '') {
+    let url = 'https://150.136.172.48/api/otb?breakdown=' + (showBreakdown ? "True" : "false") +
+      '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
+    if (filterValues.categoria !== '') {
       url += "&categoria=" + filterValues.categoria
     }
-    if (filterValues.mercado != '') {
+    if (filterValues.mercado !== '') {
       url += "&mercado=" + filterValues.mercado
     }
-    if (filterValues.periodo != '') {
+    if (filterValues.periodo !== '') {
       url += "&periodo=" + filterValues.periodo
     }
-    if (filterValues.submarca != '') {
+    if (filterValues.submarca !== '') {
       url += "&submarca=" + filterValues.submarca
     }
-    if (filterValues.une != '') {
+    if (filterValues.une !== '') {
       url += "&une=" + filterValues.une
     }
     axios.get(url, {
@@ -92,13 +97,14 @@ export default function Dashboard() {
         setData(response.data.table);
         setBreakdown(response.data.breakdown);
         setInventory(response.data.table[0].initialStock);
+        setPeriodSize(response.data.table[0].period_length);
         setBackdrop(false)
       }).catch(function (error) {
         setBackdrop(false)
       })
   };
 
-  const getFilters = () => {
+  const getFilters = (callback) => {
     axios.get('https://150.136.172.48/api/otb/filters', {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
@@ -107,33 +113,24 @@ export default function Dashboard() {
       .then(function (response) {
         setFilters(response.data.filters);
         setFilterValues({ ...filterValues, 'periodo': response.data.filters.periodo[0] })
-
+        if (callback) {
+          callback(response.data.filters.periodo[0])
+        }
       }).catch(function (error) {
       })
   }
 
   useEffect(() => {
-    otb();
-    getFilters();
+    setBackdrop(true)
+    getFilters((periodo) => { otb(periodo) });
   }, []);
 
+  useEffect(() => {
+    setBackdrop(true)
+    otb()
+  }, [showBreakdown])
+
   const columns = [
-    {
-      key: 'startDateCurrentPeriodOTB',
-      name: 'Periodo',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-    },
-    {
-      key: 'period_length',
-      name: 'Tamaño del periodo',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-    },
     {
       key: 'startDateProjectionPeriodOTB',
       name: 'Periodo de Proyeccion',
@@ -152,26 +149,44 @@ export default function Dashboard() {
       formatter: CellValue
     },
     {
-      key: 'purchases',
-      name: 'Compras',
+      key: 'inventoryOnStores',
+      name: 'Inventario PISO',
       resizable: true,
       sortable: false,
       filterable: false,
-      editable: false,
-      formatter: CellValue
-    },
-    {
-      key: 'devolution',
-      name: 'Devoluciones',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
+      editable: true,
       formatter: CellValue
     },
     {
       key: 'targetSells',
-      name: 'Ventas esperadas',
+      name: 'Tgt Venta Precio Lista',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'devolution',
+      name: 'Tgt Devolucion',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'purchases',
+      name: 'Compra',
+      resizable: true,
+      sortable: false,
+      filterable: false,
+      editable: true,
+      formatter: CellValue
+    },
+    {
+      key: 'projectionEomStock',
+      name: 'Proyección Stock EOM',
       resizable: true,
       sortable: false,
       filterable: false,
@@ -180,20 +195,11 @@ export default function Dashboard() {
     },
     {
       key: 'targetStock',
-      name: 'Stock esperado',
-      resizable: true,
-      sortable: false,
-      filterable: false,
-      editable: false,
-      formatter: CellValue
-    },
-    {
-      key: 'projectionEomStock',
       name: 'Tgt Stock EOM',
       resizable: true,
       sortable: false,
       filterable: false,
-      editable: false,
+      editable: true,
       formatter: CellValue
     },
     {
@@ -217,13 +223,14 @@ export default function Dashboard() {
   ];
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
-    this.setState(state => {
-      const rows = rows.slice();
-      for (let i = fromRow; i <= toRow; i++) {
-        rows[i] = { ...rows[i], ...updated };
-      }
-      return { rows };
-    });
+    console.log(updated)
+    let jsonDataTable = JSON.parse(JSON.stringify(data))
+    for (let i = fromRow; i <= toRow; i++) {
+      Object.keys(updated).forEach((key) => {
+        jsonDataTable[i][key] = parseInt(updated[key])
+      })
+    }
+    fastOTB(jsonDataTable)
   };
 
   const handleFilter = (filter) => {
@@ -236,16 +243,19 @@ export default function Dashboard() {
 
   const handleChangeStock = () => {
     const new_data = parseInt(document.getElementById("changingStock").value)
+    let jsonDataTable = JSON.parse(JSON.stringify(data))
     setInventory(new_data)
-    fastOTB(new_data)
+    fastOTB(jsonDataTable, new_data)
     setOpen(false);
   };
 
-  const fastOTB = (startStock) => {
+  const fastOTB = (jsonDataTable, startStock) => {
     // This function calculates the OTB for just one given table of the OTB
     //Inputs:
     // jsonDataTable: Json with the data of the OTB table to calculate.
-    let jsonDataTable = JSON.parse(JSON.stringify(data))
+    if (startStock == null) {
+      startStock = inventory;
+    }
     let stock_inicial, inventario_piso, target_venta, devolucion, compras, proyeccion_stock_eom, target_stock_eom, otb_minus_ctb, percentage_otb;
     for (let t = 0; t < jsonDataTable.length; t++) {
       if (t === 0) {
@@ -357,7 +367,7 @@ export default function Dashboard() {
 
             <Grid item xs={2}>
               <Button variant="contained" style={{ background: '#000' }} onClick={() => { otb() }} disabled={
-                filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
+                filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === ""
               }>
                 <span style={{ color: '#fff' }}>Filtrar</span>
               </Button>
@@ -366,26 +376,29 @@ export default function Dashboard() {
           </Grid>
           <Grid container>
             <Grid item xs={4} style={{ textAlign: 'left' }}>
+              <p>Tamaño de los periodos pre-calculados: <b>{periodSize}</b></p>
+            </Grid>
+            <Grid item xs={4} style={{ textAlign: 'left' }}>
               Inventario inicial: <b>{inventory}</b>
               <IconButton aria-label="delete" onClick={handleClickOpen}>
                 <EditRoundedIcon />
               </IconButton>
             </Grid>
-            <Grid item xs={4} style={{ textAlign: 'left' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showBreakdown}
-                    onChange={(event) => { setBackdrop(true); setTimeout(() => { setShowBreakdown(!showBreakdown) }, 250); }}
-                    name="Desglozar"
-                    color="default"
-                  />
-                }
-                label="Desglozar"
-                disabled={
-                  filterValues.categoria == "" && filterValues.mercado == "" && filterValues.une == "" && filterValues.submarca == ""
-                }
-              />
+            <Grid item xs={2}/>
+            <Grid item xs={2} style={{ marginLeft:"auto", marginRight:"auto" }}>
+              <Tooltip classes={{ tooltip: classes.customWidth }} title={(filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === "" && !showBreakdown) ? "Esta accion tomara un tiempo en cargar, porfavor seleccione por lo menos un filtro si desea algo especifico." : ""} arrow>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showBreakdown}
+                      onChange={(event) => { setBackdrop(true); setTimeout(() => { setShowBreakdown(!showBreakdown) }, 250); }}
+                      name="Desglozar"
+                      color="default"
+                    />
+                  }
+                  label="Desglozar"
+                />
+              </Tooltip>
             </Grid>
           </Grid>
           <Dialog
