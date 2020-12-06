@@ -1,34 +1,40 @@
 import logging
 from flask import Blueprint, request, make_response, jsonify
-from flask.views import MethodView
+from .route_view import RouteView
 
 from app.models.UserData import UserData
 from app.models.BlacklistToken import BlacklistToken
 from app.libs.decorators import login_required
 from app.libs import db
+from app.libs import validation
 from cx_Oracle import IntegrityError
 import datetime
 
 auth_blueprint = Blueprint('auth', __name__)
 
 
-class Auth(MethodView):
+class Auth(RouteView):
     def login(self):
-        # get the post data
-        post_data = request.get_json()
+        data = request.get_json()
         try:
-            # fetch the user data
+            check = validation.InputValidation(data, {
+                'email': [validation.Strip, validation.ValidateNotEmpty, validation.ValidateEmail]
+            })
+            try:
+                check.validate()
+            except validation.DataNotValidException:
+                return self.return_data_not_valid(check)
             user = UserData.query.filter_by(
-                email=post_data.get('email')
+                email=data.get('email')
             ).first()
-            if user.check_password(post_data.get('password')):
+            if user.check_password(data.get('password')):
                 if not user.enabled:
                     responseObject = {
                         'status': 'fail',
                         'message': 'User disabled.'
                     }
                     return make_response(jsonify(responseObject)), 403
-                if post_data.get('keep'):
+                if data.get('keep'):
                     days_session = 30
                 else:
                     days_session = 1

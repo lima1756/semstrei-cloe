@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response, render_template
-from flask.views import MethodView
+from .route_view import RouteView
 from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
@@ -9,7 +9,7 @@ import datetime
 otb_filters_blueprint = Blueprint('otb_filters', __name__)
 
 
-class Filter(MethodView):
+class Filter(RouteView):
 
     filters = {
         'categoria': OtbResults.categoria,
