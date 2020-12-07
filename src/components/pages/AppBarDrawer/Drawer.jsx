@@ -136,7 +136,7 @@ export default function ClippedDrawer() {
                   </ListItemIcon>
                   <ListItemText primary="Graficas" />
                 </ListItem>
-                <ListItem 
+                {/* <ListItem 
                 button 
                 className={classes.nested}
                 selected={selectedIndex === 4}
@@ -146,7 +146,7 @@ export default function ClippedDrawer() {
                     <TableChartRoundedIcon />
                   </ListItemIcon>
                   <ListItemText primary="Tbls. de control" />
-                </ListItem>
+                </ListItem> */}
               </List>
             </Collapse>
             {
