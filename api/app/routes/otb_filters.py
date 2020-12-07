@@ -16,7 +16,7 @@ class Filter(MethodView):
         'une': OtbResults.une,
         'mercado': OtbResults.mercado,
         'submarca': OtbResults.submarca,
-        'startDateCurrentPeriodOTB': OtbResults.startDateCurrentPeriodOTB
+        'startDateCurrentPeriodOTB': OtbResults.startDateProjectionPeriodOTB
     }
 
     def format_date(self, date_raw):
