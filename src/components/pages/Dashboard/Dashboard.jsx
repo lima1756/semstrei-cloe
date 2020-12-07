@@ -366,9 +366,7 @@ export default function Dashboard() {
             </Grid>
 
             <Grid item xs={2}>
-              <Button variant="contained" style={{ background: '#000' }} onClick={() => { otb() }} disabled={
-                filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === ""
-              }>
+              <Button variant="contained" style={{ background: '#000' }} onClick={() => { otb() }} >
                 <span style={{ color: '#fff' }}>Filtrar</span>
               </Button>
             </Grid>
@@ -384,8 +382,7 @@ export default function Dashboard() {
                 <EditRoundedIcon />
               </IconButton>
             </Grid>
-            <Grid item xs={2}/>
-            <Grid item xs={2} style={{ marginLeft:"auto", marginRight:"auto" }}>
+            <Grid item xs={2} style={{ marginLeft: "auto", marginRight: "auto" }}>
               <Tooltip classes={{ tooltip: classes.customWidth }} title={(filterValues.categoria === "" && filterValues.mercado === "" && filterValues.une === "" && filterValues.submarca === "" && !showBreakdown) ? "Esta accion tomara un tiempo en cargar, porfavor seleccione por lo menos un filtro si desea algo especifico." : ""} arrow>
                 <FormControlLabel
                   control={
@@ -399,6 +396,11 @@ export default function Dashboard() {
                   label="Desglozar"
                 />
               </Tooltip>
+            </Grid>
+            <Grid item xs={2} >
+              {/* <Button variant="contained" style={{ background: '#000' }} >
+                <span style={{ color: '#fff'}}>Descargar</span>
+              </Button> */}
             </Grid>
           </Grid>
           <Dialog
