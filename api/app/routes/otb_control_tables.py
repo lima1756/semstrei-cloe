@@ -1,7 +1,7 @@
 import logging
 from flask import Blueprint, request, jsonify, make_response, render_template
 from flask.views import MethodView
-from app.models import ControlCategoryRateByUneAndPeriod, RelationClientMercado
+from app.models import ControlCategoryRateByUneAndPeriod, RelationClientMercado, RateTarget
 from app.libs import db
 from app.libs.decorators import login_required
 
@@ -222,9 +222,52 @@ class RateByUneAndPeriod(ControlTables):
         return ControlCategoryRateByUneAndPeriod.query.all()
 
 
+class RateTargetRoute(MethodView):
+
+    @login_required
+    def put(self):
+        data = request.get_json()
+        obj = RateTarget.query.get(1)
+        if obj is not None:
+            obj.update(data.get('rate'))
+            db.session.add(obj)
+            db.session.commit()
+            responseObject = {
+                'status': 'success'
+            }
+            return make_response(jsonify(responseObject)), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Some error occurred. Please try again.'
+            }
+            return make_response(jsonify(responseObject)), 500
+
+    @login_required
+    def get(self):
+        obj = RateTarget.query.get(1)
+        if obj is not None:
+            responseObject = {
+                'status': 'success',
+                'data': {
+                    'rate': obj.rate,
+                    'updated_at': obj.updated_at
+                }
+            }
+            return make_response(jsonify(responseObject)), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Some error occurred. Please try again.'
+            }
+            return make_response(jsonify(responseObject)), 500
+    
+
+
 relation_client_mercado_view = RelationClientMercadoRoute.as_view(
     'relation_client_mercado')
 rate_by_une_view = RateByUneAndPeriod.as_view('rate_by_une')
+rate_target_view = RateTargetRoute.as_view('rate_target')
 
 
 otb_control_tables_blueprint.add_url_rule(
@@ -250,3 +293,9 @@ otb_control_tables_blueprint.add_url_rule(
     view_func=rate_by_une_view,
     methods=['GET', 'DELETE', 'PUT']
 )
+otb_control_tables_blueprint.add_url_rule(
+    '/otb/control/rate_target',
+    view_func=rate_target_view,
+    methods=['GET', 'PUT']
+)
+
