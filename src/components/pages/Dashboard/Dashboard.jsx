@@ -315,7 +315,7 @@ export default function Dashboard() {
                   onChange={handleFilter('une')}
                   value={filterValues.une}
                 >
-                  <MenuItem value=''></MenuItem>
+                  <MenuItem value=''>Seleccionar</MenuItem>
                   {
                     filters.une.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -329,7 +329,7 @@ export default function Dashboard() {
                   onChange={handleFilter('submarca')}
                   value={filterValues.submarca}
                 >
-                  <MenuItem value=''></MenuItem>
+                  <MenuItem value=''>Seleccionar</MenuItem>
                   {
                     filters.submarca.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -343,7 +343,7 @@ export default function Dashboard() {
                   onChange={handleFilter('categoria')}
                   value={filterValues.categoria}
                 >
-                  <MenuItem value=''></MenuItem>
+                  <MenuItem value=''>Seleccionar</MenuItem>
                   {
                     filters.categoria.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
@@ -357,7 +357,7 @@ export default function Dashboard() {
                   onChange={handleFilter('mercado')}
                   value={filterValues.mercado}
                 >
-                  <MenuItem value=''></MenuItem>
+                  <MenuItem value=''>Seleccionar</MenuItem>
                   {
                     filters.mercado.map(i => <MenuItem value={i}>{i}</MenuItem>)
                   }
