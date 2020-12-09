@@ -11,7 +11,7 @@ import EntryPoint from './components/pages/EntryPoint/EntryPoint';
 import { SnackbarProvider } from 'notistack';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
 function App() {
 
@@ -28,6 +28,9 @@ function App() {
             <Route path='/login' component={Login} />
             <Route exact path='/' component={EntryPoint} />
             <Route path={`/resetPassword/:code`} component={PasswordReset} />
+            <Route path='/dashboard' >
+              <Redirect to={{ pathname: '/dashboard/resultTables' }} />
+            </Route>
             {/* <Route path='*' component={() => '404 NOT FOUND'}/> */}
           </Switch>
         </Router>
