@@ -7,6 +7,7 @@ import axios from 'axios';
 import https from 'https';
 import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
+import Handle401 from '../../../../utils/Handle401';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -29,9 +30,7 @@ export default function UpdateUserDialog({ user, open, handleClose }) {
     axios.get('https://150.136.172.48/api/recover/request?email=' + user.email)
       .then(function (response) {
         handleEmailSent('success');
-      }).catch(function (error) {
-        handleEmailError('error');
-      })
+      }).catch((r) => Handle401(r, () => handleEmailError('error')))
     handleClose();
   }
 
@@ -47,9 +46,7 @@ export default function UpdateUserDialog({ user, open, handleClose }) {
       }
     }).then(function (response) {
       handleUserUpdated('success');
-    }).catch(function (error) {
-      handleUserError('error');
-    })
+    }).catch((r) => Handle401(r, () => handleUserError('error')))
     handleClose();
   };
 

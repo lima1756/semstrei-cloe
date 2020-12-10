@@ -13,6 +13,7 @@ import TableHeader from './components/TableHeader';
 import TableHeadToolbar from './components/TableHeadToolbar';
 import axios from 'axios';
 import https from 'https';
+import Handle401 from '../../../utils/Handle401';
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -105,9 +106,7 @@ export default function EnhancedTable() {
         })
             .then(function (response) {
                 setUsers(response.data.data);
-            }).catch(function (error) {
-                handleErrorLoadingUsers('error');
-            })
+            }).catch((r) => Handle401(r, () => handleErrorLoadingUsers('error')))
     };
 
     // eslint-disable-next-line
@@ -199,9 +198,7 @@ export default function EnhancedTable() {
         })
             .then(function (response) {
                 setUsers(response.data.data);
-            }).catch(function (error) {
-                console.log(error)
-            })
+            }).catch((r) => Handle401(r, () => { }))
     };
 
     const handleChipDelete = () => {

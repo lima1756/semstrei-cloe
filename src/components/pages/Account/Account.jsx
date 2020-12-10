@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { userinformation } from '../../../redux/actions';
 import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import UpdateAccount from './components/UpdateAccount'
+import Handle401 from '../../../utils/Handle401'
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -66,12 +67,7 @@ export default function MediaControlCard() {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
       }
-    }).then(function (response) {
-      dispatch(userinformation(user.admin, user.newUser, name === '' ? user.name : name, mail === '' ? user.mail : mail, phone === '' ? user.phone : phone, user.role, user.userId));
-      handleSuccessUpdate('success');
-    }).catch(function (error) {
-      handleErrorUpdate('error');
-    })
+    }).then((r) => Handle401(r, () => handleErrorUpdate('error')))
   };
 
   const handleUpdateClick = () => {

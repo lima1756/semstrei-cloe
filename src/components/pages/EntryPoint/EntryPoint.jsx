@@ -37,11 +37,6 @@ export default function EntryPoint() {
             let status = response.data.status === 'success' ? true : false;
             dispatch(signin(status, response.data.auth_token));
             setTimeout(() => { history.push('/dashboard/resultTables'); }, 1000)
-        }).catch(function (error) {
-            if (error.response && error.response.status === 401) {
-                dispatch(signin(false, ''));
-            }
-            history.push('/login');
         })
         return <Backdrop className={classes.backdrop} open={true} >
             <CircularProgress color="inherit" />

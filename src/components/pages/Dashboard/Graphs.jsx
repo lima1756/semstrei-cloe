@@ -14,6 +14,7 @@ import axios from 'axios';
 import { useSelector, } from 'react-redux';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Handle401 from '../../../utils/Handle401'
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -44,6 +45,7 @@ export default function Graphs() {
 
   const otb = (periodo) => {
     setBackdrop(true)
+    const onErr = () => { setBackdrop(false) }
     let url = 'https://150.136.172.48/api/otb?breakdown=false' +
       '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
     if (filterValues.categoria !== '') {
@@ -71,9 +73,7 @@ export default function Graphs() {
         setInventory(response.data.table[0].initialStock);
         setBackdrop(false)
         get_data_for_graphics(response.data.table);
-      }).catch(function (error) {
-        setBackdrop(false)
-      })
+      }).catch((r) => Handle401(r, onErr))
   };
 
   useEffect(() => {
@@ -121,8 +121,7 @@ export default function Graphs() {
         if (callback) {
           callback(response.data.filters.periodo[0])
         }
-      }).catch(function (error) {
-      })
+      }).catch((r) => Handle401(r, () => { }))
   }
 
   console.log("Info", data);

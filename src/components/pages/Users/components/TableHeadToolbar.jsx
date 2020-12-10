@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
+import Handle401 from '../../../../utils/Handle401';
 
 const useToolbarStyles = makeStyles((theme) => ({
     root: {
@@ -49,9 +50,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserDelete('success');
             handleUserUpdate();
-        }).catch(function (error) {
-            handleUserDeleteError('error');
-        })
+        }).catch((r) => Handle401(r, () => handleUserDeleteError('error')))
     };
 
     const handleEnable = () => {
@@ -65,9 +64,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserEnable('success');
             handleUserUpdate();
-        }).catch(function (error) {
-            handleUserEnableError('error');
-        })
+        }).catch((r) => Handle401(r, () => handleUserEnableError('error')))
     };
 
     const handleDisable = () => {
@@ -81,9 +78,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserDisable('success');
             handleUserUpdate();
-        }).catch(function (error) {
-            handleUserDisableError('error');
-        })
+        }).catch((r) => Handle401(r, () => handleUserDisableError('error')))
     };
 
     // --------------------------- Snackbar success User Added ---------------------- 

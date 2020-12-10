@@ -19,6 +19,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import FileDownload from 'js-file-download';
+import Handle401 from '../../../utils/Handle401'
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -89,6 +90,7 @@ export default function Dashboard() {
   }
 
   const otb = (periodo) => {
+    const onErr = () => { setBackdrop(false) }
     setBackdrop(true)
     const url = genUrl(periodo);
     axios.get(url, {
@@ -102,13 +104,12 @@ export default function Dashboard() {
         setInventory(response.data.table[0].initialStock);
         setPeriodSize(response.data.table[0].period_length);
         setBackdrop(false)
-      }).catch(function (error) {
-        setBackdrop(false)
-      })
+      }).catch((r) => Handle401(r, onErr))
   };
 
   const downloadPDF = () => {
     setBackdrop(true)
+    const onErr = () => { setBackdrop(false) }
     const url = genUrl(null) + "&pdf=True";
     axios.get(url, {
       headers: {
@@ -121,9 +122,7 @@ export default function Dashboard() {
       .then(function (response) {
         setBackdrop(false)
         FileDownload(response.data, 'reporte.pdf')
-      }).catch(function (error) {
-        setBackdrop(false)
-      })
+      }).catch((r) => Handle401(r, onErr))
   }
 
   const getFilters = (callback) => {
@@ -138,8 +137,7 @@ export default function Dashboard() {
         if (callback) {
           callback(response.data.filters.periodo[0])
         }
-      }).catch(function (error) {
-      })
+      }).catch((r) => Handle401(r, () => { }))
   }
 
   useEffect(() => {

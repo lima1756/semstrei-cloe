@@ -7,6 +7,7 @@ import axios from 'axios';
 import https from 'https';
 import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
+import Handle401 from '../../../utils/Handle401';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -40,22 +41,20 @@ export default function AlertDialog({ open, handleClose }) {
       email: mail,
       name: name,
       role: role === 'admin' ? 0 : role === 'tech' ? 1 : 2
-    },{
+    }, {
       headers: {
-          'Authorization': `Bearer ${isLogged.token}`
-        }
-  }).then(function (response) {
+        'Authorization': `Bearer ${isLogged.token}`
+      }
+    }).then(function (response) {
       handleUserCreated('success');
-    }).catch(function (error) {
-      handleUserError('error');
-    })
+    }).catch((r) => Handle401(r, () => handleUserError('error')))
   };
 
   // --------------------------- Snackbar success User Added ---------------------- 
-  const handleUserCreated = (variant) => { enqueueSnackbar( 'El usuario se agregó correctamente.', {variant}) };
+  const handleUserCreated = (variant) => { enqueueSnackbar('El usuario se agregó correctamente.', { variant }) };
 
   // --------------------------- Snackbar error adding User ---------------------- 
-  const handleUserError = (variant) => { enqueueSnackbar( 'Ocurrió un error al agregar el usuario.', {variant}) };
+  const handleUserError = (variant) => { enqueueSnackbar('Ocurrió un error al agregar el usuario.', { variant }) };
 
   return (
     <div>
@@ -74,15 +73,15 @@ export default function AlertDialog({ open, handleClose }) {
               <RadioGroup aria-label="gender" name="gender1" value={value} onChange={handleChange}>
                 <Grid container spacing={3}>
                   <Grid item xs={6}>
-                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario con poder de crear, modificar y eliminar usuarios' arrow>
+                    <Tooltip classes={{ tooltip: classes.customWidth }} title='Usuario con poder de crear, modificar y eliminar usuarios' arrow>
                       <FormControlLabel value="admin" control={<Radio color="default" />} label="Administrador" />
                     </Tooltip>
-                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario de IT, solo podrá consultar las tablas' arrow>
+                    <Tooltip classes={{ tooltip: classes.customWidth }} title='Usuario de IT, solo podrá consultar las tablas' arrow>
                       <FormControlLabel value="tech" control={<Radio color="default" />} label="IT" />
                     </Tooltip>
                   </Grid>
                   <Grid item xs={5}>
-                    <Tooltip classes={{ tooltip : classes.customWidth}} title='Usuario de finanzas, solo podrá consultar las tablas' arrow>
+                    <Tooltip classes={{ tooltip: classes.customWidth }} title='Usuario de finanzas, solo podrá consultar las tablas' arrow>
                       <FormControlLabel value="finance" control={<Radio color="default" />} label="Finanzas" />
                     </Tooltip>
                   </Grid>
