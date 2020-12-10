@@ -79,9 +79,6 @@ export default function Dashboard() {
     if (filterValues.mercado !== '') {
       url += "&mercado=" + filterValues.mercado
     }
-    if (filterValues.periodo !== '') {
-      url += "&periodo=" + filterValues.periodo
-    }
     if (filterValues.submarca !== '') {
       url += "&submarca=" + filterValues.submarca
     }
@@ -115,8 +112,11 @@ export default function Dashboard() {
     const url = genUrl(null) + "&pdf=True";
     axios.get(url, {
       headers: {
-        'Authorization': `Bearer ${isLogged.token}`
-      }
+        'Authorization': `Bearer ${isLogged.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/pdf'
+      },
+      responseType: 'blob'
     })
       .then(function (response) {
         setBackdrop(false)
