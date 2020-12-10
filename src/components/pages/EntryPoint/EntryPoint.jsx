@@ -36,6 +36,7 @@ export default function EntryPoint() {
         }).then(function (response) {
             let status = response.data.status === 'success' ? true : false;
             dispatch(signin(status, response.data.auth_token));
+        }).then(() => {
             history.push('/dashboard/resultTables');
         }).catch(function (error) {
             if (error.response && error.response.status === 401) {
