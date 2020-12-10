@@ -93,7 +93,7 @@ export default function Dashboard() {
 
   const otb = (periodo) => {
     setBackdrop(true)
-    url = url;
+    const url = genUrl();
     axios.get(url, {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
@@ -112,8 +112,8 @@ export default function Dashboard() {
 
   const downloadPDF = () => {
     setBackdrop(true)
-    url = url;
-    axios.get(url + "&pdf=True", {
+    const url = genUrl() + "&pdf=True";
+    axios.get(url, {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
       }
