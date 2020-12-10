@@ -70,7 +70,7 @@ export default function Dashboard() {
     setValue(event.target.value);
   };
 
-  const genUrl = () => {
+  const genUrl = (periodo) => {
     let url = 'https://150.136.172.48/api/otb?breakdown=' + (showBreakdown ? "True" : "false") +
       '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
     if (filterValues.categoria !== '') {
@@ -93,7 +93,7 @@ export default function Dashboard() {
 
   const otb = (periodo) => {
     setBackdrop(true)
-    const url = genUrl();
+    const url = genUrl(periodo);
     axios.get(url, {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
@@ -112,7 +112,7 @@ export default function Dashboard() {
 
   const downloadPDF = () => {
     setBackdrop(true)
-    const url = genUrl() + "&pdf=True";
+    const url = genUrl(null) + "&pdf=True";
     axios.get(url, {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
