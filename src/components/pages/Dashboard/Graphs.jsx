@@ -3,18 +3,17 @@ import Drawer from '../AppBarDrawer/Drawer';
 import { Line } from 'react-chartjs-2';
 import { makeStyles } from '@material-ui/core/styles';
 import {
-  Box, Button, FormControl, IconButton, Grid, Paper, InputLabel, TextField,
-  MenuItem, Select, FormControlLabel, Checkbox, Tooltip
+  Box, Button, FormControl, Grid, Paper, InputLabel, TextField, MenuItem, Select
 } from '@material-ui/core';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import axios from 'axios';
-import https from 'https';
 import { useSelector, } from 'react-redux';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -32,14 +31,10 @@ export default function Graphs() {
   const isLogged = useSelector(state => state.logged);
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({ 'categoria': [], 'mercado': [], 'periodo': [], 'submarca': [], 'une': [] })
-  const [breakdown, setBreakdown] = useState([]);
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const [inventory, setInventory] = useState();
-  const [periodSize, setPeriodSize] = useState("");
   const [filterValues, setFilterValues] = useState({
     'categoria': '', 'mercado': '', 'periodo': '', 'submarca': '', 'une': ''
   })
-  const [value, setValue] = React.useState('default');
   const [backdrop, setBackdrop] = useState(false)
   const classes = useStyles();
   const [open, setOpen] = useState(false);
@@ -49,7 +44,7 @@ export default function Graphs() {
 
   const otb = (periodo) => {
     setBackdrop(true)
-    let url = 'https://150.136.172.48/api/otb?breakdown=' + (showBreakdown ? "True" : "false") +
+    let url = 'https://150.136.172.48/api/otb?breakdown=false' +
       '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
     if (filterValues.categoria !== '') {
       url += "&categoria=" + filterValues.categoria
@@ -73,9 +68,7 @@ export default function Graphs() {
     })
       .then(function (response) {
         setData(response.data.table);
-        setBreakdown(response.data.breakdown);
         setInventory(response.data.table[0].initialStock);
-        setPeriodSize(response.data.table[0].period_length);
         setBackdrop(false)
         get_data_for_graphics(response.data.table);
       }).catch(function (error) {
@@ -87,14 +80,8 @@ export default function Graphs() {
     setBackdrop(true)
     getFilters((periodo) => {
       otb(periodo);
-
     });
   }, []);
-
-  useEffect(() => {
-    setBackdrop(true);
-    otb();
-  }, [showBreakdown])
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -346,6 +333,9 @@ export default function Graphs() {
           </Paper>
         </Box>
       </div>
+      <Backdrop className={classes.backdrop} open={backdrop} >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   )
 }

@@ -5,58 +5,14 @@ from sqlalchemy.sql import func
 from app.models.OtbResults import OtbResults
 from app.libs import db
 from app.libs.decorators import login_required
+from flask_weasyprint import HTML, render_pdf
 import simplejson
 import datetime
-# import random
-# import time
-# import string
 
 otb_blueprint = Blueprint('otb', __name__)
 
 
 class OTB(MethodView):
-    # def random_date(self, prop):
-    #     format = '%d-%b-%Y'
-    #     start = "01-JAN-2020"
-    #     end = "01-DEC-2020"
-    #     stime = time.mktime(time.strptime(start, format))
-    #     etime = time.mktime(time.strptime(end, format))
-
-    #     ptime = stime + prop * (etime - stime)
-
-    #     return time.strftime(format, time.localtime(ptime))
-
-    # def gen_fake_data(self):
-    #     letters = string.ascii_lowercase
-    #     otb = []
-    #     for i in range(150000):
-    #         a = OtbResults(1, 30,
-    #                        self.random_date(random.random()),
-    #                        False, -1, self.random_date(random.random()),
-    #                        random.choice(letters),
-    #                        random.choice(letters),
-    #                        random.choice(letters),
-    #                        random.choice(letters),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 500),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 50000),
-    #                        random.randint(0, 50000),
-    #                        random.random()
-    #                        )
-    #         otb.append(a)
-    #     db.session.bulk_save_objects(otb)
-    #     db.session.commit()
-    #     responseObject = {
-    #         'status': 'success'
-    #     }
-    #     return make_response(simplejson.dumps(responseObject)), 200
-
-    # def post(self):
-    #     return self.gen_fake_data()
 
     def format_date(self, date_raw):
         date = datetime.datetime.strptime(
@@ -175,14 +131,7 @@ class OTB(MethodView):
             })
         return response
 
-    @login_required
-    def get(self):
-        categoria = request.args.get('categoria')
-        une = request.args.get('une')
-        submarca = request.args.get('submarca')
-        mercado = request.args.get('mercado')
-        current_period = request.args.get('current_period')
-        breakdown = request.args.get('breakdown') == 'True'
+    def get_response_obj(self, categoria, une, submarca, mercado, current_period, breakdown):
         table = self.get_table(categoria, submarca, une,
                                mercado, current_period)
         breakdown_tables = None
@@ -209,7 +158,39 @@ class OTB(MethodView):
             'table': table,
             'breakdown': breakdown_tables
         }
-        return make_response(simplejson.dumps(responseObject)), 200
+        return responseObject
+
+    def gen_pdf(self, tables, filters):
+        html = render_template("otb_pdf.html", table=tables['table'], filters="todo", breakdown=tables['breakdown'])
+        return render_pdf(HTML(string=html), download_filename="reporte.pdf")
+
+    @login_required
+    def get(self):
+        categoria = request.args.get('categoria')
+        une = request.args.get('une')
+        submarca = request.args.get('submarca')
+        mercado = request.args.get('mercado')
+        current_period = request.args.get('current_period')
+        breakdown = request.args.get('breakdown') == 'True'
+        pdf = request.args.get('pdf') == 'True'
+        responseObject = self.get_response_obj(categoria, une, submarca, mercado, current_period, breakdown)
+        if pdf:
+            filters = ""
+            if une is not None:
+                filters += une + " | "
+            if submarca is not None:
+                filters += submarca + " | "
+            if categoria is not None:
+                filters += categoria + " | "
+            if mercado is not None:
+                filters += mercado + " | "
+            if filters == "":
+                filters = "Todo el inventario"
+            else: 
+                filters = filters[:-3]
+            return self.gen_pdf(responseObject, filters)
+        else:
+            return make_response(simplejson.dumps(responseObject)), 200
 
 
 otb_view = OTB.as_view('otb')

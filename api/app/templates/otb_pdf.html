@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    /*!
+      * Materialize v1.0.0 (http://materializecss.com)
+      * Copyright 2014-2017 Materialize
+      * MIT License (https://raw.githubusercontent.com/Dogfalo/materialize/master/LICENSE)
+      */
+
+
+    table,
+    th,
+    td {
+      border: none
+    }
+
+    table {
+      width: 100%;
+      display: table;
+      border-collapse: collapse;
+      border-spacing: 0
+    }
+
+    table.striped tr {
+      border-bottom: none
+    }
+
+    table.striped>tbody>tr:nth-child(odd) {
+      background-color: rgba(242, 242, 242, 0.5)
+    }
+
+    table.striped>tbody>tr>td {
+      border-radius: 0
+    }
+
+    table.highlight>tbody>tr {
+      -webkit-transition: background-color .25s ease;
+      transition: background-color .25s ease
+    }
+
+    table.highlight>tbody>tr:hover {
+      background-color: rgba(242, 242, 242, 0.5)
+    }
+
+    table.centered thead tr th,
+    table.centered tbody tr td {
+      text-align: center
+    }
+
+    tr {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12)
+    }
+
+    td,
+    th {
+      padding: 15px 5px;
+      display: table-cell;
+      text-align: left;
+      vertical-align: middle;
+      border-radius: 2px
+    }
+
+
+    table span.badge {
+      display: inline-block;
+      float: none;
+      margin-left: auto
+    }
+
+    div {
+      margin: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: xx-large;
+      font-weight: bold;
+    }
+
+    h3 {
+      text-align: center;
+      font-size: x-large;
+      font-weight: bold;
+    }
+
+    h4 {
+      font-size: large;
+      font-weight: bold;
+    }
+
+    @page {
+      size: Letter landscape;
+      margin: 0in 0.44in 0.2in 0.44in;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Titulo, filtros seleccionados -->
+  <h2> Reporte OTB </h2>
+  <div>
+    <p>
+      <b>Periodo actual: </b> {{ table[0]['startDateCurrentPeriodOTB'] }} <br />
+      <b>Agrupacion de: </b> {{ filters }} <br />
+      <b>Tamaño del periodo: </b> {{ table[0]['period_length'] }} <br />
+      <b>Inventario Inicial: </b> {{ table[0]['initialStock'] }} <br />
+    </p>
+  </div>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>Periodo de Proyeccion</th>
+          <th>Stock Inicial Precio Lista</th>
+          <th>Inventario PISO</th>
+          <th>Tgt Venta Precio Lista</th>
+          <th>Tgt Devolucion</th>
+          <th>Compra</th>
+          <th>Proyección Stock EOM</th>
+          <th>Tgt Stock EOM</th>
+          <th>OTB / CTB</th>
+          <th>OTB / CTB (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table %}
+        <tr>
+          <td>{{ row['startDateProjectionPeriodOTB'] }}</td>
+          <td>{{ row['initialStock'] }}</td>
+          <td>{{ row['inventoryOnStores'] }}</td>
+          <td>{{ row['targetSells'] }}</td>
+          <td>{{ row['devolution'] }}</td>
+          <td>{{ row['purchases'] }}</td>
+          <td>{{ row['projectionEomStock'] }}</td>
+          <td>{{ row['targetStock'] }}</td>
+          <td>{{ row['otb_minus_ctb'] }}</td>
+          <td>{{ row['percentage_otb'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <!-- foreach breakdown titulo combinacion -->
+  {% if breakdown is not none %}
+  <h3> Desgloce Tabla OTB anterior</h3>
+  {% for break_table in breakdown %}
+  <div>
+    <h4>{{break_table[0]['une']}} - {{break_table[0]['submarca']}} - {{break_table[0]['categoria']}} -
+      {{break_table[0]['mercado']}}</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Periodo de Proyeccion</th>
+          <th>Stock Inicial Precio Lista</th>
+          <th>Inventario PISO</th>
+          <th>Tgt Venta Precio Lista</th>
+          <th>Tgt Devolucion</th>
+          <th>Compra</th>
+          <th>Proyección Stock EOM</th>
+          <th>Tgt Stock EOM</th>
+          <th>OTB / CTB</th>
+          <th>OTB / CTB (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in break_table %}
+        <tr>
+          <td>{{ row['startDateProjectionPeriodOTB'] }}</td>
+          <td>{{ row['initialStock'] }}</td>
+          <td>{{ row['inventoryOnStores'] }}</td>
+          <td>{{ row['targetSells'] }}</td>
+          <td>{{ row['devolution'] }}</td>
+          <td>{{ row['purchases'] }}</td>
+          <td>{{ row['projectionEomStock'] }}</td>
+          <td>{{ row['targetStock'] }}</td>
+          <td>{{ row['otb_minus_ctb'] }}</td>
+          <td>{{ row['percentage_otb'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+</body>
+
+</html>

@@ -18,6 +18,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FileDownload from 'js-file-download';
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -69,8 +70,7 @@ export default function Dashboard() {
     setValue(event.target.value);
   };
 
-  const otb = (periodo) => {
-    setBackdrop(true)
+  const genUrl = () => {
     let url = 'https://150.136.172.48/api/otb?breakdown=' + (showBreakdown ? "True" : "false") +
       '&current_period=' + (periodo != null ? periodo : filterValues.periodo)
     if (filterValues.categoria !== '') {
@@ -88,6 +88,12 @@ export default function Dashboard() {
     if (filterValues.une !== '') {
       url += "&une=" + filterValues.une
     }
+    return url
+  }
+
+  const otb = (periodo) => {
+    setBackdrop(true)
+    url = url;
     axios.get(url, {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
@@ -103,6 +109,22 @@ export default function Dashboard() {
         setBackdrop(false)
       })
   };
+
+  const downloadPDF = () => {
+    setBackdrop(true)
+    url = url;
+    axios.get(url + "&pdf=True", {
+      headers: {
+        'Authorization': `Bearer ${isLogged.token}`
+      }
+    })
+      .then(function (response) {
+        setBackdrop(false)
+        FileDownload(response.data, 'reporte.pdf')
+      }).catch(function (error) {
+        setBackdrop(false)
+      })
+  }
 
   const getFilters = (callback) => {
     axios.get('https://150.136.172.48/api/otb/filters', {
@@ -398,9 +420,9 @@ export default function Dashboard() {
               </Tooltip>
             </Grid>
             <Grid item xs={2} >
-              {/* <Button variant="contained" style={{ background: '#000' }} >
-                <span style={{ color: '#fff'}}>Descargar</span>
-              </Button> */}
+              <Button variant="contained" style={{ background: '#000' }} >
+                <span style={{ color: '#fff' }} onClick={downloadPDF}>Descargar</span>
+              </Button>
             </Grid>
           </Grid>
           <Dialog
@@ -458,7 +480,7 @@ export default function Dashboard() {
             })
           }
         </div>
-        <Backdrop className={classes.backdrop} open={backdrop} onClick={() => { setBackdrop(false) }}>
+        <Backdrop className={classes.backdrop} open={backdrop} >
           <CircularProgress color="inherit" />
         </Backdrop>
       </Box>
