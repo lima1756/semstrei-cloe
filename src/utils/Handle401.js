@@ -1,15 +1,11 @@
-import { useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux'
 import { signin } from '../redux/actions';
 
-export default function Handle401(error, callback) {
-  const history = useHistory();
-  const dispatch = useDispatch();
+export default function Handle401(error, history, dispatch, callback) {
   if (error.response && error.response.status === 401) {
     dispatch(signin(false, ''));
     history.push('/login');
   }
-  else {
+  else if (callback != null) {
     callback()
   }
 }

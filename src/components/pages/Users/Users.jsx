@@ -14,6 +14,8 @@ import TableHeadToolbar from './components/TableHeadToolbar';
 import axios from 'axios';
 import https from 'https';
 import Handle401 from '../../../utils/Handle401';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -97,6 +99,8 @@ export default function EnhancedTable() {
     const [updateUser, setUpdateUser] = useState(false);
     const isLogged = useSelector(state => state.logged);
     const { enqueueSnackbar } = useSnackbar();
+    const history = useHistory();
+    const dispatch = useDispatch();
 
     const getUsers = () => {
         axios.get('https://150.136.172.48/api/user/all', {
@@ -106,7 +110,7 @@ export default function EnhancedTable() {
         })
             .then(function (response) {
                 setUsers(response.data.data);
-            }).catch((r) => Handle401(r, () => handleErrorLoadingUsers('error')))
+            }).catch((r) => Handle401(r, history, dispatch, () => handleErrorLoadingUsers('error')))
     };
 
     // eslint-disable-next-line
@@ -198,7 +202,7 @@ export default function EnhancedTable() {
         })
             .then(function (response) {
                 setUsers(response.data.data);
-            }).catch((r) => Handle401(r, () => { }))
+            }).catch((r) => Handle401(r, history, dispatch))
     };
 
     const handleChipDelete = () => {

@@ -7,6 +7,8 @@ import axios from 'axios';
 import https from 'https';
 import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 import Handle401 from '../../../utils/Handle401';
 
 const httpsAgent = new https.Agent({
@@ -25,6 +27,8 @@ export default function AlertDialog({ open, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
   const isLogged = useSelector(state => state.logged);
   const classes = useStyles();
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   const handleChange = (event) => {
     setValueR(event.target.value);
@@ -47,7 +51,7 @@ export default function AlertDialog({ open, handleClose }) {
       }
     }).then(function (response) {
       handleUserCreated('success');
-    }).catch((r) => Handle401(r, () => handleUserError('error')))
+    }).catch((r) => Handle401(r, history, dispatch, () => handleUserError('error')))
   };
 
   // --------------------------- Snackbar success User Added ---------------------- 

@@ -19,6 +19,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import FileDownload from 'js-file-download';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 import Handle401 from '../../../utils/Handle401'
 
 const httpsAgent = new https.Agent({
@@ -49,10 +51,11 @@ export default function Dashboard() {
   const [filterValues, setFilterValues] = useState({
     'categoria': '', 'mercado': '', 'periodo': '', 'submarca': '', 'une': ''
   })
-  const [value, setValue] = React.useState('default');
   const [backdrop, setBackdrop] = useState(false)
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -65,10 +68,6 @@ export default function Dashboard() {
   const CellValue = ({ value }) => {
     const color = value > -1 ? "black" : "red";
     return <div style={{ color }}>{value}</div>;
-  };
-
-  const handleChange = (event) => {
-    setValue(event.target.value);
   };
 
   const genUrl = (periodo) => {
@@ -104,7 +103,7 @@ export default function Dashboard() {
         setInventory(response.data.table[0].initialStock);
         setPeriodSize(response.data.table[0].period_length);
         setBackdrop(false)
-      }).catch((r) => Handle401(r, onErr))
+      }).catch((r) => Handle401(r, history, dispatch, onErr))
   };
 
   const downloadPDF = () => {
@@ -122,7 +121,7 @@ export default function Dashboard() {
       .then(function (response) {
         setBackdrop(false)
         FileDownload(response.data, 'reporte.pdf')
-      }).catch((r) => Handle401(r, onErr))
+      }).catch((r) => Handle401(r, history, dispatch, onErr))
   }
 
   const getFilters = (callback) => {
@@ -137,7 +136,7 @@ export default function Dashboard() {
         if (callback) {
           callback(response.data.filters.periodo[0])
         }
-      }).catch((r) => Handle401(r, () => { }))
+      }).catch((r) => Handle401(r, history, dispatch))
   }
 
   useEffect(() => {

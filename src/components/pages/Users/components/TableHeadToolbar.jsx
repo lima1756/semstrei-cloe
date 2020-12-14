@@ -11,6 +11,8 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import Handle401 from '../../../../utils/Handle401';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 
 const useToolbarStyles = makeStyles((theme) => ({
     root: {
@@ -37,6 +39,8 @@ export default function EnhancedTableToolbar(props) {
     const { numSelected, usersId, handleUserUpdate, updateUserDialog } = props;
     const isLogged = useSelector(state => state.logged);
     const { enqueueSnackbar } = useSnackbar();
+    const history = useHistory();
+    const dispatch = useDispatch();
 
     const handleDelete = () => {
         axios.delete('https://150.136.172.48/api/user', {
@@ -50,7 +54,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserDelete('success');
             handleUserUpdate();
-        }).catch((r) => Handle401(r, () => handleUserDeleteError('error')))
+        }).catch((r) => Handle401(r, history, dispatch, () => handleUserDeleteError('error')))
     };
 
     const handleEnable = () => {
@@ -64,7 +68,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserEnable('success');
             handleUserUpdate();
-        }).catch((r) => Handle401(r, () => handleUserEnableError('error')))
+        }).catch((r) => Handle401(r, history, dispatch, () => handleUserEnableError('error')))
     };
 
     const handleDisable = () => {
@@ -78,7 +82,7 @@ export default function EnhancedTableToolbar(props) {
         }).then(function (response) {
             handleUserDisable('success');
             handleUserUpdate();
-        }).catch((r) => Handle401(r, () => handleUserDisableError('error')))
+        }).catch((r) => Handle401(r, history, dispatch, () => handleUserDisableError('error')))
     };
 
     // --------------------------- Snackbar success User Added ---------------------- 

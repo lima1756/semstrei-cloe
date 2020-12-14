@@ -15,6 +15,8 @@ import { useSelector, } from 'react-redux';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Handle401 from '../../../utils/Handle401'
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -42,6 +44,8 @@ export default function Graphs() {
   const [maxValue, setMaxValue] = useState(0);
   const [outputArrayData, setOutputArrayData] = useState([]);
   const [months, setMonths] = useState([]);
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   const otb = (periodo) => {
     setBackdrop(true)
@@ -73,7 +77,7 @@ export default function Graphs() {
         setInventory(response.data.table[0].initialStock);
         setBackdrop(false)
         get_data_for_graphics(response.data.table);
-      }).catch((r) => Handle401(r, onErr))
+      }).catch((r) => Handle401(r, history, dispatch, onErr))
   };
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export default function Graphs() {
     getFilters((periodo) => {
       otb(periodo);
     });
-  }, []);
+  }, [getFilters]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -121,7 +125,7 @@ export default function Graphs() {
         if (callback) {
           callback(response.data.filters.periodo[0])
         }
-      }).catch((r) => Handle401(r, () => { }))
+      }).catch((r) => Handle401(r, history, dispatch))
   }
 
   console.log("Info", data);

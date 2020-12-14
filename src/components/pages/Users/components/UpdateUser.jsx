@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  FormLabel, FormControl, FormControlLabel, Grid, makeStyles, Radio, RadioGroup, TextField, Tooltip
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, FormLabel,
+  FormControl, FormControlLabel, Grid, makeStyles, Radio, RadioGroup, TextField, Tooltip
 } from '@material-ui/core';
 import axios from 'axios';
 import https from 'https';
 import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
 import Handle401 from '../../../../utils/Handle401';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -22,15 +24,16 @@ const useStyles = makeStyles((theme) => ({
 
 export default function UpdateUserDialog({ user, open, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
-  const [role, setRole] = useState(user ? "" + user.role : null);
   const isLogged = useSelector(state => state.logged);
   const classes = useStyles();
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   const recoverPassword = () => {
     axios.get('https://150.136.172.48/api/recover/request?email=' + user.email)
       .then(function (response) {
         handleEmailSent('success');
-      }).catch((r) => Handle401(r, () => handleEmailError('error')))
+      }).catch((r) => Handle401(r, history, dispatch, () => handleEmailError('error')))
     handleClose();
   }
 
@@ -46,7 +49,7 @@ export default function UpdateUserDialog({ user, open, handleClose }) {
       }
     }).then(function (response) {
       handleUserUpdated('success');
-    }).catch((r) => Handle401(r, () => handleUserError('error')))
+    }).catch((r) => Handle401(r, history, dispatch, () => handleUserError('error')))
     handleClose();
   };
 
@@ -77,7 +80,7 @@ export default function UpdateUserDialog({ user, open, handleClose }) {
           <TextField fullWidth id="phoneUpdate" label="Telefono" defaultValue={user.phone_number} />
           <FormControl component="fieldset" id="radioOptions">
             <FormLabel component="legend" style={{ paddingTop: 25, paddingBottom: 15 }}>Rol</FormLabel>
-            <RadioGroup aria-label="Role" name="role" defaultValue={"" + user.role} onChange={e => { setRole(e.target.value) }} >
+            <RadioGroup aria-label="Role" name="role" defaultValue={"" + user.role} >
               <Grid container spacing={3}>
                 <Grid item xs={6}>
                   <Tooltip classes={{ tooltip: classes.customWidth }} title='Usuario con poder de crear, modificar y eliminar usuarios' arrow>

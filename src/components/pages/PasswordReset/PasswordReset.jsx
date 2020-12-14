@@ -43,7 +43,7 @@ export default function Login() {
                 handleCodeError('error')
                 history.push('/login');
             });
-    }, []);
+    }, [code, handleCodeError, history]);
 
     const handlePasswordReset = () => {
         const password = document.getElementById('newPassword').value

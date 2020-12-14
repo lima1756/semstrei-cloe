@@ -62,7 +62,7 @@ class OTB(MethodView):
         # WHERE
         filters = [
             # OtbResults.isFutureProjection == False,
-            OtbResults.startDateProjectionPeriodOTB == current_period
+            OtbResults.startDateCurrentPeriodOTB == current_period
         ]
         if categoria is not None:
             filters.append(OtbResults.categoria == categoria)
@@ -103,7 +103,7 @@ class OTB(MethodView):
                  OtbResults.mercado]
             )
 
-        order_by.append(asc(OtbResults.startDateCurrentPeriodOTB))
+        order_by.append(asc(OtbResults.startDateProjectionPeriodOTB))
 
         res_query = db.session.query(*select)\
             .filter(*filters).group_by(*group_by)\
@@ -112,8 +112,8 @@ class OTB(MethodView):
         for row in res_query:
             period_length = self.format_period_length(row[11])
             response.append({
-                "startDateCurrentPeriodOTB": self.format_date(row[1]),
-                "startDateProjectionPeriodOTB": self.format_date(row[0]),
+                "startDateCurrentPeriodOTB": self.format_date(row[0]),
+                "startDateProjectionPeriodOTB": self.format_date(row[1]),
                 "initialStock": row[2],
                 "inventoryOnStores": row[3],
                 "purchases": row[4],

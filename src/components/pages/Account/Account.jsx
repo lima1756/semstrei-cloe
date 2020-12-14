@@ -5,11 +5,12 @@ import Drawer from '../AppBarDrawer/Drawer';
 import { useSnackbar } from 'notistack';
 import axios from 'axios';
 import https from 'https';
-import { useSelector, useDispatch } from 'react-redux';
-import { userinformation } from '../../../redux/actions';
+import { useSelector } from 'react-redux';
 import EditRoundedIcon from '@material-ui/icons/EditRounded';
 import UpdateAccount from './components/UpdateAccount'
 import Handle401 from '../../../utils/Handle401'
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -47,8 +48,9 @@ export default function MediaControlCard() {
   const { enqueueSnackbar } = useSnackbar();
   const isLogged = useSelector(state => state.logged);
   const user = useSelector(state => state.user);
-  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -67,7 +69,7 @@ export default function MediaControlCard() {
       headers: {
         'Authorization': `Bearer ${isLogged.token}`
       }
-    }).then((r) => Handle401(r, () => handleErrorUpdate('error')))
+    }).then((r) => Handle401(r, history, dispatch, () => handleErrorUpdate('error')))
   };
 
   const handleUpdateClick = () => {
@@ -82,7 +84,7 @@ export default function MediaControlCard() {
   };
 
   // -----------------------Snackbar de update-------------------------
-  const handleSuccessUpdate = (variant) => { enqueueSnackbar('La información se actualizó correctamente.', { variant }) };
+  // const handleSuccessUpdate = (variant) => { enqueueSnackbar('La información se actualizó correctamente.', { variant }) };
 
   // -----------------------Snackbar de Error-------------------------
   const handleErrorUpdate = (variant) => { enqueueSnackbar('No se pudo actualizar la información, intente más tarde.', { variant }) };
