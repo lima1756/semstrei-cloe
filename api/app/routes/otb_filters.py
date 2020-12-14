@@ -16,7 +16,7 @@ class Filter(MethodView):
         'une': OtbResults.une,
         'mercado': OtbResults.mercado,
         'submarca': OtbResults.submarca,
-        'startDateProjectionPeriodOTB': OtbResults.startDateProjectionPeriodOTB
+        'startDateCurrentPeriodOTB': OtbResults.startDateCurrentPeriodOTB
     }
 
     def format_date(self, date_raw):
@@ -45,7 +45,7 @@ class Filter(MethodView):
                 'une': self.get_by_filter('une'),
                 'mercado': self.get_by_filter('mercado'),
                 'submarca': self.get_by_filter('submarca'),
-                'periodo': self.get_by_filter('startDateProjectionPeriodOTB', self.format_date),
+                'periodo': self.get_by_filter('startDateCurrentPeriodOTB', self.format_date),
             }
         }
         return make_response(jsonify(responseObject)), 200
